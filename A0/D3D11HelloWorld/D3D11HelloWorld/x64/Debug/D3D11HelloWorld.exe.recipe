@@ -2,15 +2,15 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\buimi\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\D3D11HelloWorld.exe</FullPath>
+      <FullPath>D:\Profiles\mmb5049\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\D3D11HelloWorld.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Users\buimi\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\PixelShader.cso</FullPath>
+      <FullPath>D:\Profiles\mmb5049\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\PixelShader.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Users\buimi\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\VertexShader.cso</FullPath>
+      <FullPath>D:\Profiles\mmb5049\source\repos\IGME-540\A0\D3D11HelloWorld\x64\Debug\VertexShader.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

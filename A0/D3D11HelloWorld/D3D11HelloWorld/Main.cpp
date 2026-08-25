@@ -10,6 +10,8 @@
 #include <wrl/client.h>
 #include <Windows.h>
 
+using namespace DirectX;
+
 // Global data to track
 unsigned int windowWidth = 1280;
 unsigned int windowHeight = 720;
@@ -237,15 +239,15 @@ int WINAPI WinMain(
 	// Vertex buffer setup
 	{
 		// Color definitions
-		DirectX::XMFLOAT4 red = DirectX::XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-		DirectX::XMFLOAT4 green = DirectX::XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-		DirectX::XMFLOAT4 blue = DirectX::XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+		XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+		XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+		XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 		// Actual vertex data to be placed on the GPU
 		Vertex vertices[] =
 		{
-		{ DirectX::XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ DirectX::XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ DirectX::XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
 		};
 		// First, we need to describe the buffer we want to make on the GPU
 		D3D11_BUFFER_DESC vbd = {};
