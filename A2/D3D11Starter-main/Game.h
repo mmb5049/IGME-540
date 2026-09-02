@@ -36,9 +36,15 @@ private:
 	float* arrayAsPointer;
 	DirectX::XMFLOAT4 vectorStruct;
 	DirectX::XMFLOAT4 color;
-
-
-
+	DirectX::XMFLOAT4 skyColor;
+	DirectX::XMFLOAT4 color1;
+	DirectX::XMFLOAT4 color2;
+	DirectX::XMFLOAT4 color3;
+	bool showDemo;
+	bool testToggle;
+	char testText[128];
+	int selectedOption;
+	bool showDemoWindow;
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do

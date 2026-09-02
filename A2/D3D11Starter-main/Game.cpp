@@ -20,6 +20,23 @@ using namespace DirectX;
 // --------------------------------------------------------
 Game::Game()
 {
+	number = 0;
+	ptr = &number;
+	localArray[0] = { 0.5f };
+	localArray[1] = { 0.5f };
+	arrayAsPointer = new float[3];
+	vectorStruct = DirectX::XMFLOAT4(10.0f, -2.0f, 99.0f, 0.1f);
+	color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.5f, 1.0f);
+	skyColor = XMFLOAT4(0.4f, 0.6f, 0.75f, 1.0f);
+	color1 = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	color2 = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	color3 = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	showDemo = false;
+	testToggle = false;
+	strcpy_s(testText, "Hello ImGui!");
+	selectedOption = 0;
+	showDemoWindow = true;
+
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
 	//  - You'll be expanding and/or replacing these later
@@ -36,13 +53,7 @@ Game::Game()
 	//ImGui::StyleColorsLight();
 	//ImGui::StyleColorsClassic();
 
-	number = 0;
-	ptr = &number;
-	localArray[0] = { 0.5f };
-	localArray[1] = { 0.5f };
-	arrayAsPointer = new float[3];
-	vectorStruct = DirectX::XMFLOAT4(10.0f, -2.0f, 99.0f, 0.1f);
-	color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.5f, 1.0f);
+	
 
 
 
@@ -79,6 +90,7 @@ Game::Game()
 // --------------------------------------------------------
 Game::~Game()
 {
+	delete[] arrayAsPointer;
 	// ImGui clean up
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();
@@ -164,9 +176,7 @@ void Game::CreateGeometry()
 {
 	// Create some temporary variables to represent colors
 	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	
 
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in CPU memory
@@ -182,9 +192,9 @@ void Game::CreateGeometry()
 	//    since we're describing the triangle in terms of the window itself
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), color1 },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), color2 },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), color3 },
 	};
 
 	// Set up indices, which tell us which vertices to use and in which order
@@ -287,12 +297,25 @@ void Game::Update(float deltaTime, float totalTime)
 		printf("New value: %d\n", number);
 	}
 
-	ImGui::DragFloat2("2-component editor", localArray);
-	ImGui::DragFloat3("3-component editor", arrayAsPointer, 50000000);
+	
 	ImGui::DragFloat4("4-component editor", &vectorStruct.x);
 
-	ImGui::ColorEdit4("RGB color editor", &color.x);
+	ImGui::ColorEdit4("Sky Color", &skyColor.x);
 
+	// Toggle / Checkbox
+	ImGui::Checkbox("Test Toggle", &testToggle);
+
+	// Text box
+	ImGui::InputText("Test Text", testText, IM_ARRAYSIZE(testText));
+
+	// Dropdown / Combo Box
+	const char* options[] = { "Option 1", "Option 2", "Option 3" };
+	ImGui::Combo("Test Options", &selectedOption, options, IM_ARRAYSIZE(options));
+
+	if (ImGui::Button("Show/Hide Demo Window"))
+	{
+		showDemo = !showDemo;
+	}
 	ImGui::End();
 
 	// Example input checking: Quit if the escape key is pressed
@@ -315,7 +338,10 @@ void Game::UINewFrame(float deltaTime)
 	Input::SetKeyboardCapture(io.WantCaptureKeyboard);
 	Input::SetMouseCapture(io.WantCaptureMouse);
 	// Show the demo window
-	ImGui::ShowDemoWindow();
+	if (showDemo)
+	{
+		ImGui::ShowDemoWindow();
+	}
 }
 
 
@@ -329,8 +355,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - At the beginning of Game::Draw() before drawing *anything*
 	{
 		// Clear the back buffer (erase what's on screen) and depth buffer
-		const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
-		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(),	color);
+		Graphics::Context->ClearRenderTargetView(Graphics::BackBufferRTV.Get(), &skyColor.x);
 		Graphics::Context->ClearDepthStencilView(Graphics::DepthBufferDSV.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 	}
 
