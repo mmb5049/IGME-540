@@ -46,6 +46,7 @@ int WINAPI WinMain(
 	// Do we also want a console window?  Probably only in debug mode
 	Window::CreateConsoleWindow(500, 120, 32, 120);
 	printf("Console window created successfully.  Feel free to printf() here.\n");
+
 #endif
 
 	// Set up app initialization details

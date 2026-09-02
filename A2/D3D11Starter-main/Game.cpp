@@ -36,6 +36,10 @@ Game::Game()
 	//ImGui::StyleColorsLight();
 	//ImGui::StyleColorsClassic();
 
+	int number = 42;
+	int* ptr = &number;
+
+
 	// Set initial graphics API state
 	//  - These settings persist until we change them
 	//  - Some of these, like the primitive topology & input layout, probably won't change
@@ -255,6 +259,25 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	UINewFrame(deltaTime);
+	// Replace the %f with the next parameter, and format as a float
+	ImGui::Text("Framerate: %f fps", ImGui::GetIO().Framerate);
+
+	// Replace each %d with the next parameter, and format as decimal integers
+	// The "x" will be printed as-is between the numbers, like so: 800x600
+	ImGui::Text("Window Resolution: %dx%d", Window::Width(), Window::Height());
+
+	if (ImGui::Button("Click me"))
+	{
+		// This will only execute on frames in which the button is clicked
+	}
+
+	// Draggable slider from 0-100 which reads and updates the variable number
+	// - number is an integer variable, so &number is its address (a pointer)
+	if (ImGui::SliderInt("Choose a number", &number, 0, 100)) {
+		// This code runs only when the user moves the slider
+		printf("New value: %d\n", number);
+	}
+
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();

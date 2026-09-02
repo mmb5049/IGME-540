@@ -19,12 +19,17 @@ public:
 	void Draw(float deltaTime, float totalTime);
 	void OnResize();
 
+
 private:
 
 	// Initialization helper methods - feel free to customize, combine, remove, etc.
 	void LoadShaders();
 	void CreateGeometry();
 	void UINewFrame(float deltaTime);
+
+	int number;      // A standard integer variable
+	int* ptr;
+
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
