@@ -36,8 +36,15 @@ Game::Game()
 	//ImGui::StyleColorsLight();
 	//ImGui::StyleColorsClassic();
 
-	int number = 42;
-	int* ptr = &number;
+	number = 0;
+	ptr = &number;
+	localArray[0] = { 0.5f };
+	localArray[1] = { 0.5f };
+	arrayAsPointer = new float[3];
+	vectorStruct = DirectX::XMFLOAT4(10.0f, -2.0f, 99.0f, 0.1f);
+	color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.5f, 1.0f);
+
+
 
 
 	// Set initial graphics API state
@@ -259,6 +266,8 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	UINewFrame(deltaTime);
+
+	ImGui::Begin("Minh - ImGui window");
 	// Replace the %f with the next parameter, and format as a float
 	ImGui::Text("Framerate: %f fps", ImGui::GetIO().Framerate);
 
@@ -277,6 +286,14 @@ void Game::Update(float deltaTime, float totalTime)
 		// This code runs only when the user moves the slider
 		printf("New value: %d\n", number);
 	}
+
+	ImGui::DragFloat2("2-component editor", localArray);
+	ImGui::DragFloat3("3-component editor", arrayAsPointer, 50000000);
+	ImGui::DragFloat4("4-component editor", &vectorStruct.x);
+
+	ImGui::ColorEdit4("RGB color editor", &color.x);
+
+	ImGui::End();
 
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))

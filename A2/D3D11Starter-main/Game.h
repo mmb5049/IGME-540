@@ -5,6 +5,8 @@
 #include "imgui.h"
 #include "imgui_impl_dx11.h"
 #include "imgui_impl_win32.h"
+#include <DirectXMath.h>
+
 class Game
 {
 public:
@@ -29,6 +31,12 @@ private:
 
 	int number;      // A standard integer variable
 	int* ptr;
+
+	float localArray[2];
+	float* arrayAsPointer;
+	DirectX::XMFLOAT4 vectorStruct;
+	DirectX::XMFLOAT4 color;
+
 
 
 	// Note the usage of ComPtr below
