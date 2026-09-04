@@ -282,35 +282,29 @@ void Game::Update(float deltaTime, float totalTime)
 	ImGui::Text("Framerate: %f fps", ImGui::GetIO().Framerate);
 
 	// Replace each %d with the next parameter, and format as decimal integers
-	// The "x" will be printed as-is between the numbers, like so: 800x600
 	ImGui::Text("Window Resolution: %dx%d", Window::Width(), Window::Height());
 
-	if (ImGui::Button("Click me"))
-	{
-		// This will only execute on frames in which the button is clicked
-	}
-
 	// Draggable slider from 0-100 which reads and updates the variable number
-	// - number is an integer variable, so &number is its address (a pointer)
 	if (ImGui::SliderInt("Choose a number", &number, 0, 100)) {
-		// This code runs only when the user moves the slider
+		// run this code to console for debug purpose
 		printf("New value: %d\n", number);
 	}
 
-	
+	// 4 values vectors
 	ImGui::DragFloat4("4-component editor", &vectorStruct.x);
 
+	// Chaning the sky color
 	ImGui::ColorEdit4("Sky Color", &skyColor.x);
 
 	// Toggle / Checkbox
 	ImGui::Checkbox("Test Toggle", &testToggle);
 
 	// Text box
-	ImGui::InputText("Test Text", testText, IM_ARRAYSIZE(testText));
+	ImGui::InputText("Test Text", testText, 99);
 
 	// Dropdown / Combo Box
 	const char* options[] = { "Option 1", "Option 2", "Option 3" };
-	ImGui::Combo("Test Options", &selectedOption, options, IM_ARRAYSIZE(options));
+	ImGui::Combo("Test Options", &selectedOption, options, std::size(options));
 
 	if (ImGui::Button("Show/Hide Demo Window"))
 	{
