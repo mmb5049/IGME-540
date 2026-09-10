@@ -187,16 +187,16 @@ void Game::CreateGeometry()
 
 	Vertex triangleVertices[] =
 	{
-		{ XMFLOAT3(-0.8f, -0.5f, 0.0f), red },
-		{ XMFLOAT3(-0.3f, -0.5f, 0.0f), green },
-		{ XMFLOAT3(-0.55f,  0.5f, 0.0f), blue }
+		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), blue },
 	};
-
+	
 	unsigned int triangleIndices[] =
 	{
 		0, 1, 2
 	};
-
+	
 	meshes.push_back(
 		std::make_shared<Mesh>(
 			triangleVertices, 3,
@@ -211,18 +211,18 @@ void Game::CreateGeometry()
 
 	Vertex squareVertices[] =
 	{
-		{ XMFLOAT3(0.1f,  0.5f, 0.0f), red },
-		{ XMFLOAT3(0.6f,  0.5f, 0.0f), green },
-		{ XMFLOAT3(0.6f, -0.5f, 0.0f), blue },
-		{ XMFLOAT3(0.1f, -0.5f, 0.0f), yellow }
+		{ XMFLOAT3(0.5f,  0.0f, 0.0f), red },
+		{ XMFLOAT3(0.7f,  0.0f, 0.0f), green },
+		{ XMFLOAT3(0.7f, -0.25f, 0.0f), blue },
+		{ XMFLOAT3(0.5f, -0.25f, 0.0f), yellow }
 	};
-
+	
 	unsigned int squareIndices[] =
 	{
 		0, 1, 2,
 		0, 2, 3
 	};
-
+	
 	meshes.push_back(
 		std::make_shared<Mesh>(
 			squareVertices, 4,
@@ -237,20 +237,20 @@ void Game::CreateGeometry()
 
 	Vertex pentagonVertices[] =
 	{
-		{ XMFLOAT3(0.0f,  0.55f, 0.0f), red },
-		{ XMFLOAT3(0.5f,  0.2f,  0.0f), green },
-		{ XMFLOAT3(0.3f, -0.45f, 0.0f), blue },
-		{ XMFLOAT3(-0.3f, -0.45f, 0.0f), yellow },
-		{ XMFLOAT3(-0.5f,  0.2f, 0.0f), purple }
+		{ XMFLOAT3(-0.6f,  0.8f, 0.0f), red },
+		{ XMFLOAT3(-0.4f,  0.6f,  0.0f), green },
+		{ XMFLOAT3(-0.5f, 0.25f, 0.0f), blue },
+		{ XMFLOAT3(-0.7f, 0.25f, 0.0f), yellow },
+		{ XMFLOAT3(-0.8f,  0.6f, 0.0f), purple }
 	};
-
+	
 	unsigned int pentagonIndices[] =
 	{
 		0, 1, 2,
 		0, 2, 3,
 		0, 3, 4
 	};
-
+	
 	meshes.push_back(
 		std::make_shared<Mesh>(
 			pentagonVertices, 5,
