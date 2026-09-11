@@ -1,7 +1,8 @@
 #include "Mesh.h"
 
-Mesh::Mesh(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount)
+Mesh::Mesh(std::string name, Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount)
 {
+	this->name = name;
 	this->vertexCount = vertexCount;
 	this->indexCount = indexCount;
 
@@ -52,6 +53,11 @@ int Mesh::GetIndexCount()
 int Mesh::GetVertexCount()
 {
 	return vertexCount;
+}
+
+std::string Mesh::GetName()
+{
+	return name;
 }
 
 void Mesh::Draw()

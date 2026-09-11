@@ -198,7 +198,7 @@ void Game::CreateGeometry()
 	};
 	
 	meshes.push_back(
-		std::make_shared<Mesh>(
+		std::make_shared<Mesh>("Triangle",
 			triangleVertices, 3,
 			triangleIndices, 3
 		)
@@ -224,7 +224,7 @@ void Game::CreateGeometry()
 	};
 	
 	meshes.push_back(
-		std::make_shared<Mesh>(
+		std::make_shared<Mesh>("Quad",
 			squareVertices, 4,
 			squareIndices, 6
 		)
@@ -254,7 +254,7 @@ void Game::CreateGeometry()
 	};
 	
 	meshes.push_back(
-		std::make_shared<Mesh>(
+		std::make_shared<Mesh>("Spaceship",
 			pentagonVertices, 6,
 			pentagonIndices, 12
 		)
@@ -307,6 +307,23 @@ void Game::Update(float deltaTime, float totalTime)
 	// Dropdown / Combo Box
 	const char* options[] = { "Option 1", "Option 2", "Option 3" };
 	ImGui::Combo("Test Options", &selectedOption, options, std::size(options));
+
+
+	if (ImGui::CollapsingHeader("Meshes")) {
+		for (std::shared_ptr<Mesh> mesh : meshes)
+		{
+			std::string headerName = "Meshes: " + mesh->GetName();
+			if (ImGui::TreeNode(headerName.c_str()))
+			{
+				ImGui::Text("Triangles: %d", mesh->GetIndexCount()/3);
+				ImGui::Text("Vertices: %d", mesh->GetVertexCount());
+				ImGui::Text("Indices: %d", mesh->GetIndexCount());
+				ImGui::TreePop();
+			}
+		}
+	}
+
+
 
 	if (ImGui::Button("Show/Hide Demo Window"))
 	{
