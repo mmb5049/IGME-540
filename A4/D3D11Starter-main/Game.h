@@ -1,0 +1,69 @@
+#pragma once
+
+#include <d3d11.h>
+#include <wrl/client.h>
+#include "imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
+#include <DirectXMath.h>
+#include <memory>
+#include <vector>
+#include "Mesh.h"
+
+class Game
+{
+public:
+	// Basic OOP setup
+	Game();
+	~Game();
+	Game(const Game&) = delete; // Remove copy constructor
+	Game& operator=(const Game&) = delete; // Remove copy-assignment operator
+
+	// Primary functions
+	void Update(float deltaTime, float totalTime);
+	void Draw(float deltaTime, float totalTime);
+	void OnResize();
+
+
+private:
+
+	// Initialization helper methods - feel free to customize, combine, remove, etc.
+	void LoadShaders();
+	void CreateGeometry();
+	void UINewFrame(float deltaTime);
+
+	std::vector<std::shared_ptr<Mesh>> meshes;
+
+	int number;      // A standard integer variable
+	int* ptr;
+
+	float localArray[2];
+	float* arrayAsPointer;
+	DirectX::XMFLOAT4 vectorStruct;
+	DirectX::XMFLOAT4 color;
+	DirectX::XMFLOAT4 skyColor;
+	DirectX::XMFLOAT4 color1;
+	DirectX::XMFLOAT4 color2;
+	DirectX::XMFLOAT4 color3;
+	bool showDemo;
+	bool testToggle;
+	char testText[128];
+	int selectedOption;
+	bool showDemoWindow;
+	// Note the usage of ComPtr below
+	//  - This is a smart pointer for objects that abide by the
+	//     Component Object Model, which DirectX objects do
+	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
+
+	// Buffers to hold actual geometry data
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
+
+	// Shaders and shader-related constructs
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+};
+
