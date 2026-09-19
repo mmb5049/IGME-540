@@ -26,16 +26,19 @@ Game::Game()
 	localArray[1] = { 0.5f };
 	arrayAsPointer = new float[3];
 	vectorStruct = DirectX::XMFLOAT4(10.0f, -2.0f, 99.0f, 0.1f);
-	color = DirectX::XMFLOAT4(1.0f, 0.0f, 0.5f, 1.0f);
+	colorTintTriangle = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+	offsetTriangle = XMFLOAT3(0.25, 0, 0);
+	colorTintQuad = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+	offsetQuad = XMFLOAT3(0.25, 0, 0);
+	colorTintSpaceship = DirectX::XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+	offsetSpaceship = XMFLOAT3(0.25, 0, 0);
 	skyColor = XMFLOAT4(0.4f, 0.6f, 0.75f, 1.0f);
-	color1 = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	color2 = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	color3 = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 	showDemo = false;
 	testToggle = false;
 	strcpy_s(testText, "Hello ImGui!");
 	selectedOption = 0;
-	showDemoWindow = true;
+
+
 
 	// Helper methods for loading shaders, creating some basic
 	// geometry to draw and some simple camera matrices.
@@ -320,8 +323,27 @@ void Game::Update(float deltaTime, float totalTime)
 	// 4 values vectors
 	ImGui::DragFloat4("4-component editor", &vectorStruct.x);
 
-	// Chaning the sky color
+	// Changing the sky color
 	ImGui::ColorEdit4("Sky Color", &skyColor.x);
+
+	if (ImGui::CollapsingHeader("Color Tint"))
+	{
+		// Changing the tint color
+		ImGui::ColorEdit4("Triangle Tint Color ", &colorTintTriangle.x);
+		ImGui::ColorEdit4("Quad Tint Color ", &colorTintQuad.x);
+		ImGui::ColorEdit4("Spaceship Tint Color ", &colorTintSpaceship.x);
+	}
+	
+	if (ImGui::CollapsingHeader("Offset"))
+	{
+		// Changing the offset
+		ImGui::SliderFloat3("Triangle Offset", &offsetTriangle.x, 0, 1);
+		ImGui::SliderFloat3("Quad Offset", &offsetQuad.x, 0, 1);
+		ImGui::SliderFloat3("Spaceship Offset", &offsetSpaceship.x, 0, 1);
+	}
+	
+
+
 
 	// Toggle / Checkbox
 	ImGui::Checkbox("Test Toggle", &testToggle);
@@ -399,12 +421,6 @@ void Game::Draw(float deltaTime, float totalTime)
 
 
 	VertexShaderExternalData vsData{};
-	vsData.Color = XMFLOAT4(1, 0, 0, 1);
-	vsData.Offset = XMFLOAT3(sin(totalTime), 0, 0);
-
-	// Copy the above struct of data directly into GPU memory
-
-	// Struct to hold the memory address
 	D3D11_MAPPED_SUBRESOURCE map{ };
 	Graphics::Context->Map(
 		constantBuffer.Get(),
@@ -412,18 +428,41 @@ void Game::Draw(float deltaTime, float totalTime)
 		D3D11_MAP_WRITE_DISCARD,
 		0,
 		&map);
-	
+
 	// Copy
 	memcpy(map.pData, &vsData, sizeof(VertexShaderExternalData));
 
 	// unmap the resource
 	Graphics::Context->Unmap(constantBuffer.Get(), 0);
-
 	// DRAW geometry
 	{
-		for (std::shared_ptr<Mesh> mesh : meshes)
 		{
-			mesh->Draw();
+			// Mesh 1: Triangle
+			VertexShaderExternalData vsData{};
+			vsData.Color = colorTintTriangle;
+			vsData.Offset = offsetTriangle;
+
+			UpdateConstantBuffer(vsData);
+
+			meshes[0]->Draw();
+
+
+			// Mesh 2: Quad
+			vsData.Color = colorTintQuad;
+			vsData.Offset = offsetQuad;
+
+			UpdateConstantBuffer(vsData);
+
+			meshes[1]->Draw();
+
+
+			// Mesh 3: Spaceship
+			vsData.Color = colorTintSpaceship;
+			vsData.Offset = offsetSpaceship;
+
+			UpdateConstantBuffer(vsData);
+
+			meshes[2]->Draw();
 		}
 	}
 
@@ -448,6 +487,31 @@ void Game::Draw(float deltaTime, float totalTime)
 			Graphics::BackBufferRTV.GetAddressOf(),
 			Graphics::DepthBufferDSV.Get());
 	}
+}
+
+void Game::UpdateConstantBuffer(
+	const VertexShaderExternalData& data)
+{
+	D3D11_MAPPED_SUBRESOURCE map{};
+
+	Graphics::Context->Map(
+		constantBuffer.Get(),
+		0,
+		D3D11_MAP_WRITE_DISCARD,
+		0,
+		&map
+	);
+
+	memcpy(
+		map.pData,
+		&data,
+		sizeof(VertexShaderExternalData)
+	);
+
+	Graphics::Context->Unmap(
+		constantBuffer.Get(),
+		0
+	);
 }
 
 

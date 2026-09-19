@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 #include "Mesh.h"
-
+#include "BufferStruct.h"
 class Game
 {
 public:
@@ -31,6 +31,7 @@ private:
 	void LoadShaders();
 	void CreateGeometry();
 	void UINewFrame(float deltaTime);
+	void UpdateConstantBuffer(const VertexShaderExternalData& data);
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
 
@@ -40,16 +41,18 @@ private:
 	float localArray[2];
 	float* arrayAsPointer;
 	DirectX::XMFLOAT4 vectorStruct;
-	DirectX::XMFLOAT4 color;
 	DirectX::XMFLOAT4 skyColor;
-	DirectX::XMFLOAT4 color1;
-	DirectX::XMFLOAT4 color2;
-	DirectX::XMFLOAT4 color3;
+	DirectX::XMFLOAT4 colorTintTriangle;
+	DirectX::XMFLOAT3 offsetTriangle;
+	DirectX::XMFLOAT4 colorTintQuad;
+	DirectX::XMFLOAT3 offsetQuad;
+	DirectX::XMFLOAT4 colorTintSpaceship;
+	DirectX::XMFLOAT3 offsetSpaceship;
 	bool showDemo;
 	bool testToggle;
 	char testText[128];
 	int selectedOption;
-	bool showDemoWindow;
+
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
 	//     Component Object Model, which DirectX objects do
@@ -65,5 +68,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
+
+
+	
 };
 
