@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 #include "Mesh.h"
+#include "GameEntity.h"
 #include "BufferStruct.h"
 class Game
 {
@@ -34,7 +35,7 @@ private:
 	void UpdateConstantBuffer(const VertexShaderExternalData& data);
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
-
+	std::vector<std::shared_ptr<GameEntity>> entities;
 	int number;      // A standard integer variable
 	int* ptr;
 
@@ -52,6 +53,8 @@ private:
 	bool testToggle;
 	char testText[128];
 	int selectedOption;
+
+	
 
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

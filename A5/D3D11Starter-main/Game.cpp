@@ -287,6 +287,35 @@ void Game::CreateGeometry()
 			pentagonIndices, 12
 		)
 	);
+
+	// Create entities
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[0])
+	);
+
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[0])
+	);
+
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[1])
+	);
+
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[1])
+	);
+
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[2])
+	);
+
+	entities[0]->GetTransform().SetPosition(-0.5f, 0.5f, 0.0f);
+	entities[1]->GetTransform().SetPosition(0.5f, 0.5f, 0.0f);
+
+	entities[2]->GetTransform().SetPosition(-0.5f, -0.5f, 0.0f);
+	entities[3]->GetTransform().SetPosition(0.5f, -0.5f, 0.0f);
+
+	entities[4]->GetTransform().SetPosition(0.0f, 0.0f, 0.0f);
 }
 
 
@@ -378,6 +407,15 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 	ImGui::End();
 
+
+	entities[0]->GetTransform().Rotate(0.5f * deltaTime, 0.0f, 0.0f);
+	entities[1]->GetTransform().MoveAbsolute(
+		0.1f * deltaTime,
+		0.0f,
+		0.0f
+	);
+
+
 	// Example input checking: Quit if the escape key is pressed
 	if (Input::KeyDown(VK_ESCAPE))
 		Window::Quit();
@@ -437,32 +475,36 @@ void Game::Draw(float deltaTime, float totalTime)
 	// DRAW geometry
 	{
 		{
-			// Mesh 1: Triangle
-			VertexShaderExternalData vsData{};
-			vsData.Color = colorTintTriangle;
+			Graphics::Context->ClearRenderTargetView(
+				Graphics::BackBufferRTV.Get(),
+				&skyColor.x
+			);
 
-			XMStoreFloat4x4(&vsData.WorldMatrix, XMMatrixRotationZ(totalTime));
-			//vsData.Offset = offsetTriangle;
+			Graphics::Context->ClearDepthStencilView(
+				Graphics::DepthBufferDSV.Get(),
+				D3D11_CLEAR_DEPTH,
+				1.0f,
+				0
+			);
 
-			UpdateConstantBuffer(vsData);
+			// Draw every entity
+			for (auto& entity : entities)
+			{
+				VertexShaderExternalData vsData{};
 
-			meshes[0]->Draw();
+				// Get this entity's world matrix
+				vsData.WorldMatrix = entity->GetTransform().GetWorldMatrix();
 
+				// Give it a tint
+				vsData.Color = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
 
-			// Mesh 2: Quad
-			vsData.Color = colorTintQuad;
+				// Send entity data to GPU
+				UpdateConstantBuffer(vsData);
 
-			UpdateConstantBuffer(vsData);
+				// Draw entity's mesh
+				entity->Draw();
+			}
 
-			meshes[1]->Draw();
-
-
-			// Mesh 3: Spaceship
-			vsData.Color = colorTintSpaceship;
-
-			UpdateConstantBuffer(vsData);
-
-			meshes[2]->Draw();
 		}
 	}
 
