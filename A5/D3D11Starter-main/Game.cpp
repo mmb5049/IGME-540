@@ -294,14 +294,6 @@ void Game::CreateGeometry()
 	);
 
 	entities.push_back(
-		std::make_shared<GameEntity>(meshes[0])
-	);
-
-	entities.push_back(
-		std::make_shared<GameEntity>(meshes[1])
-	);
-
-	entities.push_back(
 		std::make_shared<GameEntity>(meshes[1])
 	);
 
@@ -309,11 +301,19 @@ void Game::CreateGeometry()
 		std::make_shared<GameEntity>(meshes[2])
 	);
 
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[2])
+	);
+
+	entities.push_back(
+		std::make_shared<GameEntity>(meshes[2])
+	);
+
 	entities[0]->GetTransform().SetPosition(-0.5f, 0.5f, 0.0f);
-	entities[1]->GetTransform().SetPosition(0.5f, 0.5f, 0.0f);
+	entities[1]->GetTransform().SetPosition(1.0f, 0.0f, 0.0f);
 
 	entities[2]->GetTransform().SetPosition(-0.5f, -0.5f, 0.0f);
-	entities[3]->GetTransform().SetPosition(0.5f, -0.5f, 0.0f);
+	entities[3]->GetTransform().SetPosition(-1.0f, -0.75f, 0.0f);
 
 	entities[4]->GetTransform().SetPosition(0.0f, 0.0f, 0.0f);
 }
@@ -363,14 +363,57 @@ void Game::Update(float deltaTime, float totalTime)
 		ImGui::ColorEdit4("Spaceship Tint Color ", &colorTintSpaceship.x);
 	}
 	
-	if (ImGui::CollapsingHeader("Offset"))
+	if (ImGui::CollapsingHeader("Entities"))
 	{
-		// Changing the offset
-		ImGui::SliderFloat3("Triangle Offset", &offsetTriangle.x, 0, 1);
-		ImGui::SliderFloat3("Quad Offset", &offsetQuad.x, 0, 1);
-		ImGui::SliderFloat3("Spaceship Offset", &offsetSpaceship.x, 0, 1);
+		for (int i = 0; i < entities.size(); i++)
+		{
+			std::string entityName = "Entity " + std::to_string(i);
+
+			if (ImGui::TreeNode(entityName.c_str()))
+			{
+				Transform& transform = entities[i]->GetTransform();
+
+				// Position
+				XMFLOAT3 position = transform.GetPosition();
+
+				if (ImGui::DragFloat3(
+					"Position",
+					&position.x,
+					0.01f
+				))
+				{
+					transform.SetPosition(position);
+				}
+
+				// Rotation
+				XMFLOAT3 rotation = transform.GetRotation();
+
+				if (ImGui::DragFloat3(
+					"Rotation (Radians)",
+					&rotation.x,
+					0.01f
+				))
+				{
+					transform.SetRotation(rotation);
+				}
+
+				// Scale
+				XMFLOAT3 scale = transform.GetScale();
+
+				if (ImGui::DragFloat3(
+					"Scale",
+					&scale.x,
+					0.01f
+				))
+				{
+					transform.SetScale(scale);
+				}
+
+				ImGui::TreePop();
+			}
+		}
+
 	}
-	
 
 
 
@@ -408,12 +451,8 @@ void Game::Update(float deltaTime, float totalTime)
 	ImGui::End();
 
 
-	entities[0]->GetTransform().Rotate(0.5f * deltaTime, 0.0f, 0.0f);
-	entities[1]->GetTransform().MoveAbsolute(
-		0.1f * deltaTime,
-		0.0f,
-		0.0f
-	);
+	entities[0]->GetTransform().Rotate(0.0f , 0.0f , 0.5f * deltaTime);
+	entities[2]->GetTransform().MoveAbsolute(sin(totalTime) / 2000, 0.0f, 0.0f);
 
 
 	// Example input checking: Quit if the escape key is pressed
