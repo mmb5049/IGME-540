@@ -8,7 +8,7 @@ Transform::Transform() :
 	upVector(0, 1, 0),
 	rightVector(1, 0, 0),
 	forwardVector(0, 0, 1),
-	vectorsMoved(false),
+	vectorsMoved(false)
 {
 
 }

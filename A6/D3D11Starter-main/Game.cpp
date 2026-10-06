@@ -5,6 +5,7 @@
 #include "PathHelpers.h"
 #include "Window.h"
 #include "BufferStruct.h"
+#include "Camera.h"
 #include <DirectXMath.h>
 
 // Needed for a helper function to load pre-compiled shader files
@@ -45,7 +46,10 @@ Game::Game()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
-
+	cameras = std::make_shared<Camera>(
+		Window::AspectRatio(),
+		XMFLOAT3(0.0f, 0.0f, -5.0f)
+	);
 	// Initialize ImGui itself & platform/renderer backends
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -325,9 +329,11 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
-	
+	if (cameras)
+	{
+		cameras->UpdateProjectionMatrix(Window::AspectRatio());
+	}
 }
-
 
 // --------------------------------------------------------
 // Update your game here - user input, move objects, AI, etc.
@@ -335,6 +341,8 @@ void Game::OnResize()
 void Game::Update(float deltaTime, float totalTime)
 {
 	UINewFrame(deltaTime);
+
+	cameras->Update(deltaTime);
 
 	ImGui::Begin("Minh - ImGui window");
 	// Replace the %f with the next parameter, and format as a float
@@ -497,54 +505,31 @@ void Game::Draw(float deltaTime, float totalTime)
 	}
 
 
-	VertexShaderExternalData vsData{};
-	D3D11_MAPPED_SUBRESOURCE map{ };
-	Graphics::Context->Map(
-		constantBuffer.Get(),
-		0,
-		D3D11_MAP_WRITE_DISCARD,
-		0,
-		&map);
-
-	// Copy
-	memcpy(map.pData, &vsData, sizeof(VertexShaderExternalData));
-
-	// unmap the resource
-	Graphics::Context->Unmap(constantBuffer.Get(), 0);
-	// DRAW geometry
+	// Draw every entity
+	for (auto& entity : entities)
 	{
-		{
-			Graphics::Context->ClearRenderTargetView(
-				Graphics::BackBufferRTV.Get(),
-				&skyColor.x
-			);
+		VertexShaderExternalData vsData{};
 
-			Graphics::Context->ClearDepthStencilView(
-				Graphics::DepthBufferDSV.Get(),
-				D3D11_CLEAR_DEPTH,
-				1.0f,
-				0
-			);
+		// World matrix
+		vsData.WorldMatrix =
+			entity->GetTransform().GetWorldMatrix();
 
-			// Draw every entity
-			for (auto& entity : entities)
-			{
-				VertexShaderExternalData vsData{};
+		// Camera matrices
+		vsData.ViewMatrix =
+			cameras->GetViewMatrix();
 
-				// Get this entity's world matrix
-				vsData.WorldMatrix = entity->GetTransform().GetWorldMatrix();
+		vsData.ProjectionMatrix =
+			cameras->GetProjectionMatrix();
 
-				// Give it a tint
-				vsData.Color = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+		// Color tint
+		vsData.Color =
+			XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
 
-				// Send entity data to GPU
-				UpdateConstantBuffer(vsData);
+		// Send data to GPU
+		UpdateConstantBuffer(vsData);
 
-				// Draw entity's mesh
-				entity->Draw();
-			}
-
-		}
+		// Draw mesh
+		entity->Draw();
 	}
 
 	// Frame END

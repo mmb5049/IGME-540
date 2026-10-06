@@ -10,6 +10,7 @@
 #include <vector>
 #include "Mesh.h"
 #include "GameEntity.h"
+#include "Camera.h"
 #include "BufferStruct.h"
 class Game
 {
@@ -36,6 +37,7 @@ private:
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
+	std::shared_ptr<Camera> cameras;
 	int number;      // A standard integer variable
 	int* ptr;
 
