@@ -144,6 +144,11 @@ void Camera::UpdateProjectionMatrix(float aspectRatio)
 	XMStoreFloat4x4(&projectionMatrix, projection);
 }
 
+float Camera::GetFieldOfView()
+{
+	return fieldOfView;
+}
+
 XMFLOAT4X4 Camera::GetViewMatrix()
 {
 	return viewMatrix;

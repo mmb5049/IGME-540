@@ -46,10 +46,25 @@ Game::Game()
 	//  - You'll be expanding and/or replacing these later
 	LoadShaders();
 	CreateGeometry();
-	cameras = std::make_shared<Camera>(
+	activeCameraIndex = 0;
+
+	cameras.push_back(std::make_shared<Camera>(
 		Window::AspectRatio(),
-		XMFLOAT3(0.0f, 0.0f, -5.0f)
-	);
+		XMFLOAT3(0.0f, 0.0f, -5.0f),
+		XM_PI/4
+	));
+
+	cameras.push_back(std::make_shared<Camera>(
+		Window::AspectRatio(),
+		XMFLOAT3(0.0f, 2.0f, -8.0f),
+		XM_PI/3
+	));
+
+	cameras.push_back(std::make_shared<Camera>(
+		Window::AspectRatio(),
+		XMFLOAT3(3.0f, 1.0f, -6.0f),
+		XM_PI / 2
+	));
 	// Initialize ImGui itself & platform/renderer backends
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -329,10 +344,10 @@ void Game::CreateGeometry()
 // --------------------------------------------------------
 void Game::OnResize()
 {
-	if (cameras)
-	{
-		cameras->UpdateProjectionMatrix(Window::AspectRatio());
-	}
+    for (auto& camera : cameras)
+    {
+        camera->UpdateProjectionMatrix(Window::AspectRatio());
+    }
 }
 
 // --------------------------------------------------------
@@ -342,7 +357,7 @@ void Game::Update(float deltaTime, float totalTime)
 {
 	UINewFrame(deltaTime);
 
-	cameras->Update(deltaTime);
+	cameras[activeCameraIndex]->Update(deltaTime);
 
 	ImGui::Begin("Minh - ImGui window");
 	// Replace the %f with the next parameter, and format as a float
@@ -457,7 +472,42 @@ void Game::Update(float deltaTime, float totalTime)
 		showDemo = !showDemo;
 	}
 	ImGui::End();
+	ImGui::Begin("Camera");
 
+	for (int i = 0; i < cameras.size(); i++)
+	{
+		char label[32];
+		sprintf_s(label, "Camera %d", i + 1);
+
+		if (ImGui::RadioButton(label, activeCameraIndex == i))
+		{
+			activeCameraIndex = i;
+		}
+	}
+
+	XMFLOAT3 position =
+		cameras[activeCameraIndex]->GetTransform().GetPosition();
+
+	float fov =
+		cameras[activeCameraIndex]->GetFieldOfView();
+
+	ImGui::Separator();
+
+	ImGui::Text("Active Camera: %d", activeCameraIndex + 1);
+
+	ImGui::Text(
+		"Position: %.2f, %.2f, %.2f",
+		position.x,
+		position.y,
+		position.z
+	);
+
+	ImGui::Text(
+		"Field of View: %.2f degrees",
+		XMConvertToDegrees(fov)
+	);
+
+	ImGui::End();
 
 	entities[0]->GetTransform().Rotate(0.0f , 0.0f , 0.5f * deltaTime);
 	entities[2]->GetTransform().MoveAbsolute(sin(totalTime) / 2000, 0.0f, 0.0f);
@@ -511,19 +561,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		VertexShaderExternalData vsData{};
 
 		// World matrix
-		vsData.WorldMatrix =
-			entity->GetTransform().GetWorldMatrix();
-
-		// Camera matrices
-		vsData.ViewMatrix =
-			cameras->GetViewMatrix();
-
-		vsData.ProjectionMatrix =
-			cameras->GetProjectionMatrix();
-
-		// Color tint
-		vsData.Color =
-			XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+		vsData.WorldMatrix = entity->GetTransform().GetWorldMatrix();
+		vsData.ViewMatrix = cameras[activeCameraIndex]->GetViewMatrix();
+		vsData.ProjectionMatrix = cameras[activeCameraIndex]->GetProjectionMatrix();
+		vsData.Color = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
 
 		// Send data to GPU
 		UpdateConstantBuffer(vsData);

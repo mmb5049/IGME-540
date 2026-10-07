@@ -33,6 +33,7 @@ public:
 
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix(float aspectRatio);
+	float GetFieldOfView();
 
 	DirectX::XMFLOAT4X4 GetViewMatrix();
 	DirectX::XMFLOAT4X4 GetProjectionMatrix();

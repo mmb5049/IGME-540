@@ -37,7 +37,8 @@ private:
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
-	std::shared_ptr<Camera> cameras;
+	std::vector<std::shared_ptr<Camera>> cameras;
+	int activeCameraIndex;
 	int number;      // A standard integer variable
 	int* ptr;
 
