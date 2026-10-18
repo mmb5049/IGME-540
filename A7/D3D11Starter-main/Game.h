@@ -34,15 +34,18 @@ private:
 	void CreateGeometry();
 	void UINewFrame(float deltaTime);
 	void UpdateConstantBuffer(const VertexShaderExternalData& data);
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> LoadPixelShader(const wchar_t* path);
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
 	std::vector<std::shared_ptr<Camera>> cameras;
 	std::vector<std::shared_ptr<Material>> materials;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> pixelShaderConstantBuffer;
 
 	int activeCameraIndex;
 	int number;      // A standard integer variable
 	int* ptr;
+	float totalTime = 0.0f;
 
 	float localArray[2];
 	float* arrayAsPointer;
@@ -71,12 +74,10 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer;
 
 	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
-
 
 	
 };

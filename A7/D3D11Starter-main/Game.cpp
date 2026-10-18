@@ -99,7 +99,6 @@ Game::Game()
 		//  - Once you start applying different shaders to different objects,
 		//    these calls will need to happen multiple times per frame
 		Graphics::Context->VSSetShader(vertexShader.Get(), 0, 0);
-		Graphics::Context->PSSetShader(pixelShader.Get(), 0, 0);
 	}
 
 	// Set up my constant buffer
@@ -117,6 +116,8 @@ Game::Game()
 		cbDesc.MiscFlags = 0;
 		cbDesc.StructureByteStride = 0;
 
+
+
 		Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
 
 		// "Hook up" (or BIND) the constant buffer
@@ -125,6 +126,28 @@ Game::Game()
 			0, // Must match cbuffer register in shader!!!
 			1,
 			constantBuffer.GetAddressOf());
+
+		D3D11_BUFFER_DESC pcbDesc{};
+		pcbDesc.Usage = D3D11_USAGE_DYNAMIC;
+		pcbDesc.ByteWidth = sizeof(PixelShaderExternalData);
+		pcbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+		pcbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+
+		HRESULT hr = Graphics::Device->CreateBuffer(
+			&pcbDesc,
+			nullptr,
+			pixelShaderConstantBuffer.GetAddressOf()
+		);
+
+		if (FAILED(hr))
+		{
+			OutputDebugStringA("Failed to create pixel shader constant buffer!\n");
+		}
+		Graphics::Context->PSSetConstantBuffers(
+			1,
+			1,
+			pixelShaderConstantBuffer.GetAddressOf()
+		);
 	}
 }
 
@@ -158,10 +181,13 @@ void Game::LoadShaders()
 	// BLOBs (or Binary Large OBjects) for reading raw data from external files
 	// - This is a simplified way of handling big chunks of external data
 	// - Literally just a big array of bytes read from a file
-	ID3DBlob* pixelShaderBlob;
 	ID3DBlob* vertexShaderBlob;
 
 	// Loading shaders
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> basicPixelShader = LoadPixelShader(FixPath(L"PixelShader.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPixelShader = LoadPixelShader(FixPath(L"CustomPS.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> normalPixelShader = LoadPixelShader(FixPath(L"DebugNormalsPS.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> uvPixelShader = LoadPixelShader(FixPath(L"DebugUVsPS.cso").c_str());
 	//  - Visual Studio will compile our shaders at build time
 	//  - They are saved as .cso (Compiled Shader Object) files
 	//  - We need to load them when the application starts
@@ -170,15 +196,11 @@ void Game::LoadShaders()
 		// - Essentially just "open the file and plop its contents here"
 		// - Uses the custom FixPath() helper from Helpers.h to ensure relative paths
 		// - Note the "L" before the string - this tells the compiler the string uses wide characters
-		D3DReadFileToBlob(FixPath(L"PixelShader.cso").c_str(), &pixelShaderBlob);
+		
+
 		D3DReadFileToBlob(FixPath(L"VertexShader.cso").c_str(), &vertexShaderBlob);
 
 		// Create the actual Direct3D shaders on the GPU
-		Graphics::Device->CreatePixelShader(
-			pixelShaderBlob->GetBufferPointer(),	// Pointer to blob's contents
-			pixelShaderBlob->GetBufferSize(),		// How big is that data?
-			0,										// No classes in this shader
-			pixelShader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
 
 		Graphics::Device->CreateVertexShader(
 			vertexShaderBlob->GetBufferPointer(),	// Get a pointer to the blob's contents
@@ -216,19 +238,24 @@ void Game::LoadShaders()
 			inputLayout.GetAddressOf());			// Address of the resulting ID3D11InputLayout pointer
 	}
 	materials.push_back(std::make_shared<Material>(
-		DirectX::XMFLOAT4(1.0f, 0.3f, 0.3f, 1.0f),
+		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
-		pixelShader));
+		basicPixelShader));
 
 	materials.push_back(std::make_shared<Material>(
-		DirectX::XMFLOAT4(0.3f, 1.0f, 0.3f, 1.0f),
+		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
-		pixelShader));
+		uvPixelShader));
 
 	materials.push_back(std::make_shared<Material>(
-		DirectX::XMFLOAT4(0.3f, 0.3f, 1.0f, 1.0f),
+		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
+		vertexShader, 
+		normalPixelShader));
+
+	materials.push_back(std::make_shared<Material>(
+		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
-		pixelShader));
+		customPixelShader));
 }
 
 
@@ -258,24 +285,25 @@ void Game::CreateGeometry()
 	meshes.push_back(std::make_shared<Mesh>("Torus",
 		FixPath("../../../../Assets/Meshes/torus.obj").c_str()));
 
-	// Create entities
-	entities.push_back(
-		std::make_shared<GameEntity>(meshes[0], materials[0])
-	);
+	for (int i = 1; i < materials.size(); i++)
+	{
+		for (int y = 0; y < meshes.size(); y++)
+		{
+			entities.push_back(
+				std::make_shared<GameEntity>(meshes[y], materials[i])
+			);
 
-	entities.push_back(
-		std::make_shared<GameEntity>(meshes[1], materials[1])
-	);
+			int entityIndex = (int)entities.size() - 1;
 
-	entities.push_back(
-		std::make_shared<GameEntity>(meshes[2], materials[2])
-	);
-
-
-	entities[0]->GetTransform().SetPosition(-0.5f, 0.5f, 0.0f);
-	entities[1]->GetTransform().SetPosition(1.0f, 0.0f, 0.0f);
-
-	entities[2]->GetTransform().SetPosition(-0.5f, -0.5f, 0.0f);
+			entities[entityIndex]->GetTransform().SetPosition(
+				XMFLOAT3(
+					4.0f * y - 12.0f,
+					4.0f * i - 6.0f,
+					0.0f
+				)
+			);
+		}
+	}
 }
 
 
@@ -450,8 +478,6 @@ void Game::Update(float deltaTime, float totalTime)
 
 	ImGui::End();
 
-	entities[0]->GetTransform().Rotate(0.0f , 0.0f , 0.5f * deltaTime);
-	entities[2]->GetTransform().MoveAbsolute(sin(totalTime) / 2000, 0.0f, 0.0f);
 
 
 	// Example input checking: Quit if the escape key is pressed
@@ -504,27 +530,56 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Bind the shaders specified by this entity's material
 		Graphics::Context->VSSetShader(
 			material->GetVertexShader().Get(),
-			nullptr,
+			0,
 			0);
 
 		Graphics::Context->PSSetShader(
 			material->GetPixelShader().Get(),
-			nullptr,
+			0,
 			0);
 
 
-		VertexShaderExternalData vsData{};
-
 		// World matrix
+		// Update the vertex shader buffer as before
+		VertexShaderExternalData vsData{};
 		vsData.WorldMatrix = entity->GetTransform().GetWorldMatrix();
 		vsData.ViewMatrix = cameras[activeCameraIndex]->GetViewMatrix();
 		vsData.ProjectionMatrix = cameras[activeCameraIndex]->GetProjectionMatrix();
 		vsData.Color = material->GetColorTint();
 
-		// Send data to GPU
 		UpdateConstantBuffer(vsData);
 
-		// Draw mesh
+		// Update the pixel shader buffer separately
+		PixelShaderExternalData psData{};
+		psData.ColorTint = material->GetColorTint();
+		psData.TotalTime = totalTime;
+		psData.Padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
+
+		D3D11_MAPPED_SUBRESOURCE map{};
+
+		HRESULT hr = Graphics::Context->Map(
+			pixelShaderConstantBuffer.Get(),
+			0,
+			D3D11_MAP_WRITE_DISCARD,
+			0,
+			&map
+		);
+
+		if (SUCCEEDED(hr))
+		{
+			memcpy(
+				map.pData,
+				&psData,
+				sizeof(PixelShaderExternalData)
+			);
+
+			Graphics::Context->Unmap(
+				pixelShaderConstantBuffer.Get(),
+				0
+			);
+		}
+
+		// Draw the entity
 		entity->Draw();
 	}
 
@@ -576,5 +631,18 @@ void Game::UpdateConstantBuffer(
 	);
 }
 
+Microsoft::WRL::ComPtr<ID3D11PixelShader> Game::LoadPixelShader(const wchar_t* path)
+{
+	// Read the contents of the compiled shader object to a blob
+	ID3DBlob* shaderBlob;
+	D3DReadFileToBlob(path, &shaderBlob);
 
-
+	// Create the pixel shader and return it
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
+	Graphics::Device->CreatePixelShader(
+		shaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+		shaderBlob->GetBufferSize(),	// How big is that data?
+		0,								// No classes in this shader
+		shader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+	return shader;
+}

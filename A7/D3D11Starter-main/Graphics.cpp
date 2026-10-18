@@ -178,6 +178,8 @@ void Graphics::ShutDown()
 }
 
 
+
+
 // --------------------------------------------------------
 // When the window is resized, the underlying 
 // buffers (textures) must also be resized to match.

@@ -10,3 +10,10 @@ struct VertexShaderExternalData
 
     DirectX::XMFLOAT4 Color;
 };
+
+struct PixelShaderExternalData
+{
+    DirectX::XMFLOAT4 ColorTint;
+    float TotalTime;
+    DirectX::XMFLOAT3 Padding;
+};
