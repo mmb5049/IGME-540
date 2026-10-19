@@ -123,7 +123,7 @@ Game::Game()
 		// "Hook up" (or BIND) the constant buffer
 		// to the proper stage of the rendering pipeline
 		Graphics::Context->VSSetConstantBuffers(
-			0, // Must match cbuffer register in shader!!!
+			0, 
 			1,
 			constantBuffer.GetAddressOf());
 
@@ -132,19 +132,15 @@ Game::Game()
 		pcbDesc.ByteWidth = sizeof(PixelShaderExternalData);
 		pcbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 		pcbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-
-		HRESULT hr = Graphics::Device->CreateBuffer(
+		pcbDesc.MiscFlags = 0;
+		pcbDesc.StructureByteStride = 0;
+		Graphics::Device->CreateBuffer(
 			&pcbDesc,
 			nullptr,
 			pixelShaderConstantBuffer.GetAddressOf()
 		);
-
-		if (FAILED(hr))
-		{
-			OutputDebugStringA("Failed to create pixel shader constant buffer!\n");
-		}
 		Graphics::Context->PSSetConstantBuffers(
-			1,
+			0,
 			1,
 			pixelShaderConstantBuffer.GetAddressOf()
 		);
@@ -557,27 +553,23 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		D3D11_MAPPED_SUBRESOURCE map{};
 
-		HRESULT hr = Graphics::Context->Map(
+		Graphics::Context->Map(
 			pixelShaderConstantBuffer.Get(),
 			0,
 			D3D11_MAP_WRITE_DISCARD,
 			0,
-			&map
-		);
+			&map);
 
-		if (SUCCEEDED(hr))
-		{
-			memcpy(
+		
+		memcpy(
 				map.pData,
 				&psData,
-				sizeof(PixelShaderExternalData)
-			);
+				sizeof(PixelShaderExternalData));
 
-			Graphics::Context->Unmap(
+		Graphics::Context->Unmap(
 				pixelShaderConstantBuffer.Get(),
-				0
-			);
-		}
+				0);
+		
 
 		// Draw the entity
 		entity->Draw();

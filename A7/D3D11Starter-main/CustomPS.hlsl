@@ -1,4 +1,4 @@
-cbuffer externalData : register(b1)
+cbuffer externalData : register(b0)
 {
     float4 colorTint;
     float totalTime;
