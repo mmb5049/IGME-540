@@ -1,5 +1,6 @@
 #include "Material.h"
 
+
 Material::Material(DirectX::XMFLOAT4 colorTint, Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader, Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader)
 {
     this->colorTint = colorTint;
@@ -66,3 +67,29 @@ void Material::BindTexturesAndSamplers(ID3D11DeviceContext* context)
     }
 
 }
+
+DirectX::XMFLOAT2 Material::GetUVScale()
+{
+    return uvScale;
+}
+
+DirectX::XMFLOAT2 Material::GetUVOffset()
+{
+    return uvOffset;
+}
+
+void Material::SetUVScale(DirectX::XMFLOAT2 scale)
+{
+    uvScale = scale;
+}
+
+void Material::SetUVOffset(DirectX::XMFLOAT2 offset)
+{
+    uvOffset = offset;
+}
+
+const std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>& Material::GetTextureSRVs()
+{
+    return textureSRVs;
+}
+

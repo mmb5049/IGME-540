@@ -166,6 +166,7 @@ void Game::LoadShaders()
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPixelShader = LoadPixelShader(FixPath(L"CustomPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> normalPixelShader = LoadPixelShader(FixPath(L"DebugNormalsPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> uvPixelShader = LoadPixelShader(FixPath(L"DebugUVsPS.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> blendPixelShader = LoadPixelShader(FixPath(L"TextureBlendPS.cso").c_str());
 
 	// Loading textures
 	DirectX::CreateWICTextureFromFile(
@@ -181,6 +182,13 @@ void Game::LoadShaders()
 		FixPath(L"../../Textures/Brick.png").c_str(),
 		nullptr,
 		brickTexture.GetAddressOf()
+	);
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/Decal.png").c_str(),
+		nullptr,
+		decalTexture.GetAddressOf()
 	);
 
 	D3D11_SAMPLER_DESC samplerDesc = {};
@@ -266,7 +274,7 @@ void Game::LoadShaders()
 	materials.push_back(std::make_shared<Material>(
 		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader, 
-		basicPixelShader));
+		blendPixelShader));
 
 	materials.push_back(std::make_shared<Material>(
 		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -276,10 +284,11 @@ void Game::LoadShaders()
 	materials[0]->AddTextureSRV(0, woodTexture);
 	materials[0]->AddSampler(0, textureSampler);
 
-	materials[1]->AddTextureSRV(0, woodTexture);
+	materials[1]->AddTextureSRV(0, brickTexture);
 	materials[1]->AddSampler(0, textureSampler);
 
 	materials[2]->AddTextureSRV(0, brickTexture);
+	materials[2]->AddTextureSRV(1, decalTexture);
 	materials[2]->AddSampler(0, textureSampler);
 }
 
@@ -432,6 +441,69 @@ void Game::Update(float deltaTime, float totalTime)
 
 	}
 
+	if (ImGui::CollapsingHeader("Materials"))
+	{
+		for (int i = 0; i < materials.size(); i++)
+		{
+			auto& material = materials[i];
+
+			ImGui::PushID(i);
+
+			std::string name = "Material " + std::to_string(i);
+
+			if (ImGui::TreeNode(name.c_str()))
+			{
+				// Edit color tint
+				XMFLOAT4 tint = material->GetColorTint();
+
+				if (ImGui::ColorEdit4("Color Tint", &tint.x))
+				{
+					material->SetColorTint(tint);
+				}
+
+				// Edit UV scale
+				XMFLOAT2 uvScale = material->GetUVScale();
+
+				if (ImGui::DragFloat2(
+					"UV Scale", &uvScale.x, 0.05f))
+				{
+					material->SetUVScale(uvScale);
+				}
+
+				// Edit UV offset
+				XMFLOAT2 uvOffset = material->GetUVOffset();
+
+				if (ImGui::DragFloat2(
+					"UV Offset", &uvOffset.x, 0.01f))
+				{
+					material->SetUVOffset(uvOffset);
+				}
+
+				// Display all textures used by this material
+				ImGui::Text("Textures:");
+
+				for (const auto& entry : material->GetTextureSRVs())
+				{
+					ImGui::PushID(static_cast<int>(entry.first));
+
+					std::string textureLabel =
+						"Texture slot " + std::to_string(entry.first);
+
+					ImGui::Text("%s", textureLabel.c_str());
+
+					ImGui::Image(
+						entry.second.Get(),
+						ImVec2(96.0f, 96.0f));
+
+					ImGui::PopID();
+				}
+
+				ImGui::TreePop();
+			}
+
+			ImGui::PopID();
+		}
+	}
 
 
 	// Toggle / Checkbox
@@ -602,6 +674,8 @@ void Game::Draw(float deltaTime, float totalTime)
 		psData.ColorTint = material->GetColorTint();
 		psData.TotalTime = totalTime;
 		psData.Padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
+		psData.UVScale = material->GetUVScale();
+		psData.UVOffset = material->GetUVOffset();
 
 		FillAndBindNextConstantBuffer(
 			&psData,

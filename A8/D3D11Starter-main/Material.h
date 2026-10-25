@@ -18,6 +18,10 @@ private:
 
     std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11SamplerState>> samplers;
 
+    DirectX::XMFLOAT2 uvScale = DirectX::XMFLOAT2(1.0f, 1.0f);
+
+    DirectX::XMFLOAT2 uvOffset = DirectX::XMFLOAT2(0.0f, 0.0f);
+
 public:
     Material(
         DirectX::XMFLOAT4 colorTint,
@@ -37,6 +41,13 @@ public:
     void AddSampler(unsigned int slot,Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler);
 
     void BindTexturesAndSamplers(ID3D11DeviceContext* context);
+
+    DirectX::XMFLOAT2 GetUVScale();
+    DirectX::XMFLOAT2 GetUVOffset();
+    void SetUVScale(DirectX::XMFLOAT2 scale);
+    void SetUVOffset(DirectX::XMFLOAT2 offset);
+    const std::unordered_map<unsigned int, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>>& GetTextureSRVs();
+
 
 };
 

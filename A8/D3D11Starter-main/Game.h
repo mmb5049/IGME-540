@@ -87,7 +87,7 @@ private:
 	// Textures
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
-
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> decalTexture;
 	// Shared sampler state
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> textureSampler;
 
