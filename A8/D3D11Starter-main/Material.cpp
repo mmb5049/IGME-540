@@ -36,3 +36,33 @@ void Material::SetPixelShader(Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelSha
 {
     this->pixelShader = pixelShader;
 }
+
+void Material::AddTextureSRV(unsigned int slot, Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv)
+{
+    textureSRVs[slot] = srv;
+}
+
+void Material::AddSampler(unsigned int slot, Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler)
+{
+    samplers[slot] = sampler;
+}
+
+void Material::BindTexturesAndSamplers(ID3D11DeviceContext* context)
+{
+    for (const auto& entry : textureSRVs)
+    {
+        unsigned int slot = entry.first;
+        ID3D11ShaderResourceView* srv = entry.second.Get();
+
+        context->PSSetShaderResources(slot, 1, &srv);
+    }
+
+    for (const auto& entry : samplers)
+    {
+        unsigned int slot = entry.first;
+        ID3D11SamplerState* sampler = entry.second.Get();
+
+        context->PSSetSamplers(slot, 1, &sampler);
+    }
+
+}

@@ -12,6 +12,11 @@
 #include "GameEntity.h"
 #include "Camera.h"
 #include "BufferStruct.h"
+#include <Windows.h>
+#include <d3d11_1.h>
+#include <string>
+#include <d3d11shadertracing.h>
+
 class Game
 {
 public:
@@ -79,6 +84,31 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
+	// Textures
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
+
+	// Shared sampler state
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> textureSampler;
+
 	
+
+	// Large shared constant buffer
+	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferRing;
+
+	// Direct3D 11.1 context for binding buffer ranges
+
+	// Ring buffer tracking
+	int constantBufferOffset = 0;
+	const int CONSTANT_BUFFER_RING_SIZE = 256000;
+	const int CONSTANT_BUFFER_ALIGNMENT = 256;
+	bool firstConstantBufferAllocation = true;
+
+	// New helper function
+	void FillAndBindNextConstantBuffer(
+		const void* data,
+		int dataSize,
+		D3D11_SHADER_TYPE shaderType,
+		int slot);
 };
 

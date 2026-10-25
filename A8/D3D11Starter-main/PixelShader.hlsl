@@ -1,3 +1,7 @@
+Texture2D SurfaceTexture : register(t0);
+SamplerState BasicSampler : register(s0);
+
+
 cbuffer externalData : register(b0)
 {
     float3 colorTint;
@@ -17,6 +21,9 @@ struct VertexToPixel
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
+    float4 surfaceColor =
+        SurfaceTexture.Sample(BasicSampler, input.uv);
 
-    return float4(colorTint, 1);
+    return surfaceColor * float4(colorTint, 0.0f);
+
 }

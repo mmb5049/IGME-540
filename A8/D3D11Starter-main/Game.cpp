@@ -7,6 +7,7 @@
 #include "BufferStruct.h"
 #include "Camera.h"
 #include <DirectXMath.h>
+#include <WICTextureLoader.h>
 
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
@@ -103,47 +104,28 @@ Game::Game()
 
 	// Set up my constant buffer
 	{
-		// Calculate the next biggest multiple of 16
-		int size = sizeof(VertexShaderExternalData);
-		size = (size + 15) / 16 * 16;
 
-		// Describe the buffer we want
-		D3D11_BUFFER_DESC cbDesc{};
-		cbDesc.Usage = D3D11_USAGE_DYNAMIC;
-		cbDesc.ByteWidth = size;
-		cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		cbDesc.CPUAccessFlags = D3D10_CPU_ACCESS_WRITE;
-		cbDesc.MiscFlags = 0;
-		cbDesc.StructureByteStride = 0;
+		// Set up the shared constant buffer ring
+		{
+			// Get the Direct3D 11.1 context
 
+			D3D11_BUFFER_DESC cbDesc = {};
 
+			cbDesc.Usage = D3D11_USAGE_DYNAMIC;
+			cbDesc.ByteWidth = CONSTANT_BUFFER_RING_SIZE;
+			cbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+			cbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+			cbDesc.MiscFlags = 0;
+			cbDesc.StructureByteStride = 0;
 
-		Graphics::Device->CreateBuffer(&cbDesc, 0, constantBuffer.GetAddressOf());
+			Graphics::Device->CreateBuffer(
+				&cbDesc,
+				nullptr,
+				constantBufferRing.GetAddressOf());
 
-		// "Hook up" (or BIND) the constant buffer
-		// to the proper stage of the rendering pipeline
-		Graphics::Context->VSSetConstantBuffers(
-			0, 
-			1,
-			constantBuffer.GetAddressOf());
-
-		D3D11_BUFFER_DESC pcbDesc{};
-		pcbDesc.Usage = D3D11_USAGE_DYNAMIC;
-		pcbDesc.ByteWidth = sizeof(PixelShaderExternalData);
-		pcbDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-		pcbDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-		pcbDesc.MiscFlags = 0;
-		pcbDesc.StructureByteStride = 0;
-		Graphics::Device->CreateBuffer(
-			&pcbDesc,
-			nullptr,
-			pixelShaderConstantBuffer.GetAddressOf()
-		);
-		Graphics::Context->PSSetConstantBuffers(
-			0,
-			1,
-			pixelShaderConstantBuffer.GetAddressOf()
-		);
+			constantBufferOffset = 0;
+			firstConstantBufferAllocation = true;
+		}
 	}
 }
 
@@ -184,6 +166,44 @@ void Game::LoadShaders()
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPixelShader = LoadPixelShader(FixPath(L"CustomPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> normalPixelShader = LoadPixelShader(FixPath(L"DebugNormalsPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> uvPixelShader = LoadPixelShader(FixPath(L"DebugUVsPS.cso").c_str());
+
+	// Loading textures
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/Wood.png").c_str(),
+		nullptr,
+		woodTexture.GetAddressOf()
+	);
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/Brick.png").c_str(),
+		nullptr,
+		brickTexture.GetAddressOf()
+	);
+
+	D3D11_SAMPLER_DESC samplerDesc = {};
+
+	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
+
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+
+	samplerDesc.MaxAnisotropy = 16;
+	samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+
+	samplerDesc.MinLOD = 0.0f;
+	samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+	Graphics::Device->CreateSamplerState(
+		&samplerDesc,
+		textureSampler.GetAddressOf()
+	);
+
+	
+
 	//  - Visual Studio will compile our shaders at build time
 	//  - They are saved as .cso (Compiled Shader Object) files
 	//  - We need to load them when the application starts
@@ -241,17 +261,26 @@ void Game::LoadShaders()
 	materials.push_back(std::make_shared<Material>(
 		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
-		uvPixelShader));
+		basicPixelShader));
 
 	materials.push_back(std::make_shared<Material>(
 		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader, 
-		normalPixelShader));
+		basicPixelShader));
 
 	materials.push_back(std::make_shared<Material>(
 		DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		vertexShader,
 		customPixelShader));
+
+	materials[0]->AddTextureSRV(0, woodTexture);
+	materials[0]->AddSampler(0, textureSampler);
+
+	materials[1]->AddTextureSRV(0, woodTexture);
+	materials[1]->AddSampler(0, textureSampler);
+
+	materials[2]->AddTextureSRV(0, brickTexture);
+	materials[2]->AddSampler(0, textureSampler);
 }
 
 
@@ -281,7 +310,7 @@ void Game::CreateGeometry()
 	meshes.push_back(std::make_shared<Mesh>("Torus",
 		FixPath("../../../../Assets/Meshes/torus.obj").c_str()));
 
-	for (int i = 1; i < materials.size(); i++)
+	for (int i = 0; i < materials.size(); i++)
 	{
 		for (int y = 0; y < meshes.size(); y++)
 		{
@@ -508,6 +537,8 @@ void Game::UINewFrame(float deltaTime)
 // --------------------------------------------------------
 void Game::Draw(float deltaTime, float totalTime)
 {
+	constantBufferOffset = 0;
+	firstConstantBufferAllocation = true;
 	// Frame START
 	// - These things should happen ONCE PER FRAME
 	// - At the beginning of Game::Draw() before drawing *anything*
@@ -543,7 +574,28 @@ void Game::Draw(float deltaTime, float totalTime)
 		vsData.ProjectionMatrix = cameras[activeCameraIndex]->GetProjectionMatrix();
 		vsData.Color = material->GetColorTint();
 
-		UpdateConstantBuffer(vsData);
+		FillAndBindNextConstantBuffer(
+			&vsData,
+			sizeof(VertexShaderExternalData),
+			D3D11_VERTEX_SHADER,
+			0);
+
+		ID3D11ShaderResourceView* textureSRV = woodTexture.Get();
+
+		Graphics::Context->PSSetShaderResources(
+			0,
+			1,
+			&textureSRV
+		);
+
+		// Bind sampler to pixel shader slot s0
+		ID3D11SamplerState* sampler = textureSampler.Get();
+
+		Graphics::Context->PSSetSamplers(
+			0,
+			1,
+			&sampler
+		);
 
 		// Update the pixel shader buffer separately
 		PixelShaderExternalData psData{};
@@ -551,25 +603,16 @@ void Game::Draw(float deltaTime, float totalTime)
 		psData.TotalTime = totalTime;
 		psData.Padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
 
-		D3D11_MAPPED_SUBRESOURCE map{};
-
-		Graphics::Context->Map(
-			pixelShaderConstantBuffer.Get(),
-			0,
-			D3D11_MAP_WRITE_DISCARD,
-			0,
-			&map);
+		FillAndBindNextConstantBuffer(
+			&psData,
+			sizeof(PixelShaderExternalData),
+			D3D11_PIXEL_SHADER,
+			0);
 
 		
-		memcpy(
-				map.pData,
-				&psData,
-				sizeof(PixelShaderExternalData));
+		entity->GetMaterial()->BindTexturesAndSamplers(
+			Graphics::Context.Get());
 
-		Graphics::Context->Unmap(
-				pixelShaderConstantBuffer.Get(),
-				0);
-		
 
 		// Draw the entity
 		entity->Draw();
@@ -638,3 +681,67 @@ Microsoft::WRL::ComPtr<ID3D11PixelShader> Game::LoadPixelShader(const wchar_t* p
 		shader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
 	return shader;
 }
+
+void Game::FillAndBindNextConstantBuffer(const void* data, int dataSize, D3D11_SHADER_TYPE shaderType, int slot)
+{
+	// Each allocation starts on a 256-byte boundary
+	unsigned int allocationSize =
+		(dataSize + CONSTANT_BUFFER_ALIGNMENT - 1)
+		/ CONSTANT_BUFFER_ALIGNMENT
+		* CONSTANT_BUFFER_ALIGNMENT;
+
+	// Map the shared buffer
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+
+	D3D11_MAP mapType = firstConstantBufferAllocation
+		? D3D11_MAP_WRITE_DISCARD
+		: D3D11_MAP_WRITE_NO_OVERWRITE;
+
+	Graphics::Context->Map(
+		constantBufferRing.Get(),
+		0,
+		mapType,
+		0,
+		&mapped);
+
+
+
+	// Copy data into the next available section
+	memcpy(
+		static_cast<char*>(mapped.pData) + constantBufferOffset,
+		data,
+		dataSize);
+
+	Graphics::Context->Unmap(constantBufferRing.Get(), 0);
+
+	// Convert byte offsets and sizes to 16-byte constant units
+	unsigned int firstConstant = constantBufferOffset / 16;
+	unsigned int numConstants = allocationSize / 16;
+
+	ID3D11Buffer* buffer = constantBufferRing.Get();
+
+	// Bind only the section used by this shader
+	if (shaderType == D3D11_VERTEX_SHADER)
+	{
+		Graphics::Context->VSSetConstantBuffers1(
+			slot,
+			1,
+			&buffer,
+			&firstConstant,
+			&numConstants);
+	}
+	else if (shaderType == D3D11_PIXEL_SHADER)
+	{
+		Graphics::Context->PSSetConstantBuffers1(
+			slot,
+			1,
+			&buffer,
+			&firstConstant,
+			&numConstants);
+	}
+
+	// Advance to the next available section
+	constantBufferOffset += allocationSize;
+	firstConstantBufferAllocation = false;
+}
+ 
