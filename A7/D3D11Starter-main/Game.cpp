@@ -261,25 +261,25 @@ void Game::LoadShaders()
 void Game::CreateGeometry()
 {
 	meshes.push_back(std::make_shared<Mesh>("Cube",
-		FixPath("../../../../Assets/Meshes/cube.obj").c_str()));
+		FixPath("../../Assets/Meshes/cube.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Cylinder",
-		FixPath("../../../../Assets/Meshes/cylinder.obj").c_str()));
+		FixPath("../../Assets/Meshes/cylinder.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Helix",
-		FixPath("../../../../Assets/Meshes/helix.obj").c_str()));
+		FixPath("../../Assets/Meshes/helix.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Quad",
-		FixPath("../../../../Assets/Meshes/Quad.obj").c_str()));
+		FixPath("../../Assets/Meshes/Quad.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Quad Double Sided",
-		FixPath("../../../../Assets/Meshes/quad_double_sided.obj").c_str()));
+		FixPath("../../Assets/Meshes/quad_double_sided.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Sphere",
-		FixPath("../../../../Assets/Meshes/sphere.obj").c_str()));
+		FixPath("../../Assets/Meshes/sphere.obj").c_str()));
 
 	meshes.push_back(std::make_shared<Mesh>("Torus",
-		FixPath("../../../../Assets/Meshes/torus.obj").c_str()));
+		FixPath("../../Assets/Meshes/torus.obj").c_str()));
 
 	for (int i = 1; i < materials.size(); i++)
 	{
