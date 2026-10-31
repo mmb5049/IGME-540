@@ -16,7 +16,7 @@
 #include <d3d11_1.h>
 #include <string>
 #include <d3d11shadertracing.h>
-
+#include "Light.h"
 class Game
 {
 public:
@@ -95,6 +95,10 @@ private:
 
 	// Large shared constant buffer
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferRing;
+
+	// Light
+	DirectX::XMFLOAT3 ambientColor;
+	Light lights[5];
 
 	// Direct3D 11.1 context for binding buffer ranges
 

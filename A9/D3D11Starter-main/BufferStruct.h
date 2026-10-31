@@ -1,7 +1,7 @@
 #pragma once
 
 #include <DirectXMath.h>
-
+#include "Light.h"
 struct VertexShaderExternalData
 {
     DirectX::XMFLOAT4X4 WorldMatrix;
@@ -19,4 +19,12 @@ struct PixelShaderExternalData
 
     DirectX::XMFLOAT2 UVScale;
     DirectX::XMFLOAT2 UVOffset;
+
+    DirectX::XMFLOAT3 cameraPosition;
+    float cameraPadding;
+
+    DirectX::XMFLOAT3 ambientColor;
+    float ambientPadding;
+
+    Light lights[MAX_LIGHTS];
 };

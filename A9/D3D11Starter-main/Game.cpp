@@ -9,6 +9,7 @@
 #include <DirectXMath.h>
 #include <WICTextureLoader.h>
 
+
 // Needed for a helper function to load pre-compiled shader files
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -40,6 +41,15 @@ Game::Game()
 	strcpy_s(testText, "Hello ImGui!");
 	selectedOption = 0;
 
+	//lights
+	ambientColor = DirectX::XMFLOAT3(0.1f, 0.1f, 0.25f);
+	for (int i = 0; i < 5; i++)
+	{
+		lights[i].Type = LIGHT_TYPE_DIRECTIONAL;
+		lights[i].Direction = XMFLOAT3(0, -1, 0);
+		lights[i].Color = XMFLOAT3(1, 1, 1);
+		lights[i].Intensity = 0.5f;
+	}
 
 
 	// Helper methods for loading shaders, creating some basic
@@ -671,12 +681,14 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Update the pixel shader buffer separately
 		PixelShaderExternalData psData{};
+		memcpy(psData.lights, lights, sizeof(Light) * 5);
 		psData.ColorTint = material->GetColorTint();
-		psData.TotalTime = totalTime;
 		psData.Padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		psData.UVScale = material->GetUVScale();
 		psData.UVOffset = material->GetUVOffset();
-
+		psData.cameraPosition = cameras[1]->GetTransform().GetPosition();
+		psData.ambientColor = ambientColor;
+		
 		FillAndBindNextConstantBuffer(
 			&psData,
 			sizeof(PixelShaderExternalData),
