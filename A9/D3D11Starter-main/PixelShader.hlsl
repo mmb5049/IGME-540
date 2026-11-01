@@ -6,7 +6,7 @@ SamplerState BasicSampler : register(s0);
 cbuffer externalData : register(b0)
 {
     
-    float3 colorTint;
+    float4 colorTint;
     float totalTime;
     float3 padding;
     float2 UVScale;
@@ -17,7 +17,7 @@ cbuffer externalData : register(b0)
     float3 ambientColor;
     float ambientPadding;
 
-    Light lights[MAX_LIGHTS];
+    Light lights[6];
 }
 
 
@@ -35,27 +35,51 @@ float4 main(VertexToPixel input) : SV_TARGET
         SurfaceTexture.Sample(BasicSampler, uv);
 
     // Calculate material surface color
-    float3 baseColor = surfaceColor.rgb * colorTint;
+    float3 baseColor = surfaceColor.rgb * colorTint.rgb;
 
     // Ambient lighting
-    float3 ambient =
+    float3 totalLight =
         ambientColor * baseColor;
 
     // Directional diffuse lighting
     float3 totalDiffuseAndSpecular = float3(0, 0, 0);
 
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 6; i++)
     {
-        totalDiffuseAndSpecular += CalculateDirectionalLight(
-        lights[i],
-        input.normal,
-        baseColor,
-        input.worldPosition,
-        cameraPosition
+
+        if (lights[i].Type == LIGHT_TYPE_DIRECTIONAL)
+        {
+            totalDiffuseAndSpecular += CalculateDirectionalLight(
+                lights[i],
+                input.normal,
+                baseColor,
+                input.worldPosition,
+                cameraPosition
+            );
+        }
+        else if (lights[i].Type == LIGHT_TYPE_POINT)
+        {
+            totalDiffuseAndSpecular += CalculatePointLight(
+            lights[i],
+            input.normal,
+            baseColor,
+            input.worldPosition,
+            cameraPosition
         );
+        }
+        else if (lights[i].Type == LIGHT_TYPE_SPOT)
+        {
+            totalDiffuseAndSpecular += CalculateSpotLight(
+            lights[i],
+            input.normal,
+            baseColor,
+            input.worldPosition,
+            cameraPosition
+        );
+        }
     }
 
-    float3 totalLight = ambient + totalDiffuseAndSpecular;
+    totalLight += totalDiffuseAndSpecular;
 
-    return float4(totalLight, surfaceColor.a);
+    return float4(totalLight, 1);
 }

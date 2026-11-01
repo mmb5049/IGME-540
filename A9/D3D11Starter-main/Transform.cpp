@@ -10,7 +10,8 @@ Transform::Transform() :
 	forwardVector(0, 0, 1),
 	vectorsMoved(false)
 {
-
+	XMStoreFloat4x4(&worldMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&worldInverseTransposeMatrix, XMMatrixIdentity());
 }
 
 void Transform::MoveAbsolute(float x, float y, float z)
@@ -185,6 +186,11 @@ void Transform::MarkChildTransformsDirty()
 {
 }
 
+DirectX::XMFLOAT4X4 Transform::GetWorldInverseTransposeMatrix()
+{
+	UpdateMatrices();
+	return worldInverseTransposeMatrix;
+}
 
 XMFLOAT4X4 Transform::GetWorldMatrix()
 {

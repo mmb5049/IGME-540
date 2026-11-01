@@ -42,14 +42,59 @@ Game::Game()
 	selectedOption = 0;
 
 	//lights
-	ambientColor = DirectX::XMFLOAT3(0.1f, 0.1f, 0.25f);
-	for (int i = 0; i < 5; i++)
-	{
-		lights[i].Type = LIGHT_TYPE_DIRECTIONAL;
-		lights[i].Direction = XMFLOAT3(0, -1, 0);
-		lights[i].Color = XMFLOAT3(1, 1, 1);
-		lights[i].Intensity = 0.5f;
-	}
+	ambientColor = DirectX::XMFLOAT3(0.25f, 0.25f, 0.25f);
+		
+	Light light1{};
+		light1.Type = LIGHT_TYPE_DIRECTIONAL;
+		light1.Direction = XMFLOAT3(0, 0.5, 0);
+		light1.Color = XMFLOAT3(0.1, 0.1, 1);
+		light1.Intensity = 0.5f;
+
+		lights.push_back(light1);
+		
+	Light light2{};
+		light2.Type = LIGHT_TYPE_DIRECTIONAL;
+		light2.Direction = XMFLOAT3(-0.3, -0.3, 0.5);
+		light2.Color = XMFLOAT3(0.2, 1, 0.1);
+		light2.Intensity = 1.0f;
+		lights.push_back(light2);
+
+	Light light3{};
+		light3.Type = LIGHT_TYPE_DIRECTIONAL;
+		light3.Direction = XMFLOAT3(.3, 0.3, 0.3);
+		light3.Color = XMFLOAT3(1, 0.2, 0.2);
+		light3.Intensity = 1.0f;
+		lights.push_back(light3);
+
+		// Point Light 1 - White
+	Light light4{};
+		light4.Type = LIGHT_TYPE_POINT;
+		light4.Position = XMFLOAT3(-3.0f, 2.0f, -2.0f);
+		light4.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		light4.Intensity = 1.0f;
+		light4.Range = 10.0f;
+		lights.push_back(light4);
+
+		
+		// Spotlight
+	Light light5{};
+		light5.Type = LIGHT_TYPE_SPOT;
+		light5.Position = XMFLOAT3(0.0f, 5.0f, -2.0f);
+		light5.Direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
+		light5.Color = XMFLOAT3(1.0f, 1.0f, 1.0f);
+		light5.Intensity = 3.0f;
+		light5.Range = 10.0f;
+		light5.SpotInnerAngle = XMConvertToRadians(20.0f);
+		light5.SpotOuterAngle = XMConvertToRadians(35.0f);
+		lights.push_back(light5);
+
+	Light light6{};
+		light6.Type = LIGHT_TYPE_POINT;
+		light6.Position = XMFLOAT3(3.0f, 1.0f, 1.0f);
+		light6.Color = XMFLOAT3(0.4f, 0.2f, 0.6f);
+		light6.Intensity = 1.0f;
+		light6.Range = 10.0f;
+		lights.push_back(light6);
 
 
 	// Helper methods for loading shaders, creating some basic
@@ -652,9 +697,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		// Update the vertex shader buffer as before
 		VertexShaderExternalData vsData{};
 		vsData.WorldMatrix = entity->GetTransform().GetWorldMatrix();
+		vsData.WorldInvTransMatrix = entity->GetTransform().GetWorldInverseTransposeMatrix();
 		vsData.ViewMatrix = cameras[activeCameraIndex]->GetViewMatrix();
 		vsData.ProjectionMatrix = cameras[activeCameraIndex]->GetProjectionMatrix();
-		vsData.Color = material->GetColorTint();
+		
 
 		FillAndBindNextConstantBuffer(
 			&vsData,
@@ -681,12 +727,12 @@ void Game::Draw(float deltaTime, float totalTime)
 
 		// Update the pixel shader buffer separately
 		PixelShaderExternalData psData{};
-		memcpy(psData.lights, lights, sizeof(Light) * 5);
+		memcpy(&psData.lights, &lights[0], sizeof(Light) * lights.size());
 		psData.ColorTint = material->GetColorTint();
 		psData.Padding = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		psData.UVScale = material->GetUVScale();
 		psData.UVOffset = material->GetUVOffset();
-		psData.cameraPosition = cameras[1]->GetTransform().GetPosition();
+		psData.cameraPosition = cameras[activeCameraIndex]->GetTransform().GetPosition();
 		psData.ambientColor = ambientColor;
 		
 		FillAndBindNextConstantBuffer(

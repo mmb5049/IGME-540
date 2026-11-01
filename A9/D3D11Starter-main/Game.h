@@ -98,7 +98,7 @@ private:
 
 	// Light
 	DirectX::XMFLOAT3 ambientColor;
-	Light lights[5];
+	std::vector<Light> lights;
 
 	// Direct3D 11.1 context for binding buffer ranges
 
