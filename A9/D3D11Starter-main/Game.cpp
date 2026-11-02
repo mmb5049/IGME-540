@@ -558,6 +558,68 @@ void Game::Update(float deltaTime, float totalTime)
 
 			ImGui::PopID();
 		}
+
+	}
+
+	// Lighting Controls
+	if (ImGui::CollapsingHeader("Lighting"))
+	{
+		// Ambient Lighting
+		if (ImGui::TreeNode("Ambient Light"))
+		{
+			ImGui::ColorEdit3(
+				"Ambient Color",
+				&ambientColor.x
+			);
+
+			ImGui::TreePop();
+		}
+
+		ImGui::Separator();
+
+		// Individual Lights
+		for (int i = 0; i < lights.size(); i++)
+		{
+			Light& light = lights[i];
+
+			ImGui::PushID(i);
+
+			std::string lightName =
+				"Light " + std::to_string(i + 1);
+
+			if (ImGui::TreeNode(lightName.c_str()))
+			{
+				// Display light type
+				const char* lightType = "Unknown";
+
+				if (light.Type == LIGHT_TYPE_DIRECTIONAL)
+					lightType = "Directional";
+				else if (light.Type == LIGHT_TYPE_POINT)
+					lightType = "Point";
+				else if (light.Type == LIGHT_TYPE_SPOT)
+					lightType = "Spot";
+
+				ImGui::Text("Type: %s", lightType);
+
+				// Light Color
+				ImGui::ColorEdit3(
+					"Light Color",
+					&light.Color.x
+				);
+
+				// Light Intensity
+				ImGui::SliderFloat(
+					"Intensity",
+					&light.Intensity,
+					0.0f,
+					5.0f
+				);
+
+				ImGui::TreePop();
+			}
+
+			ImGui::PopID();
+		}
 	}
 
 
