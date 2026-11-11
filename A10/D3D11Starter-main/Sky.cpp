@@ -2,6 +2,7 @@
 #include "Graphics.h"
 #include "WICTextureLoader.h"
 #include "DDSTextureLoader.h"
+#include "Game.h"
 
 Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::CreateCubemap(const wchar_t* right, const wchar_t* left, const wchar_t* up, const wchar_t* down, const wchar_t* front, const wchar_t* back)
 {
@@ -118,8 +119,8 @@ Sky::~Sky()
 void Sky::Draw(std::shared_ptr<Camera> camera)
 {
     // --------------------------------------------
-   // Set render states
-   // --------------------------------------------
+     // Set render states
+     // --------------------------------------------
 
     Graphics::Context->RSSetState(
         rasterizerState.Get());

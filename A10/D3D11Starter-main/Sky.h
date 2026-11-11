@@ -24,7 +24,7 @@ private:
     // Sky shaders
     Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
     Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
-
+    Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferRing;
     // Geometry
     std::shared_ptr<Mesh> mesh;
 
