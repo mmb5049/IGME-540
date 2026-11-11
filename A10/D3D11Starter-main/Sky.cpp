@@ -74,11 +74,21 @@ Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> Sky::CreateCubemap(const wchar_
 
 }
 
-Sky::Sky(std::shared_ptr<Mesh> mesh, Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler, const wchar_t* right, const wchar_t* left, const wchar_t* up, const wchar_t* down, const wchar_t* front, const wchar_t* back, const wchar_t* vertexShaderPath, const wchar_t* pixelShaderPath)
+Sky::Sky(std::shared_ptr<Mesh> mesh,
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler,
+    const wchar_t* right,
+    const wchar_t* left,
+    const wchar_t* up,
+    const wchar_t* down,
+    const wchar_t* front,
+    const wchar_t* back,
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader,
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader)
 {
     this->mesh = mesh;
     this->sampler = sampler;
-
+    this->vertexShader = vertexShader;
+    this->pixelShader = pixelShader;
     // ------------------------------------------------
     // Rasterizer State
     // ------------------------------------------------

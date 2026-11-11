@@ -9,6 +9,11 @@
 #include "Mesh.h"
 #include "Camera.h"
 
+struct SkyVertexShaderData
+{
+    DirectX::XMFLOAT4X4 View;
+    DirectX::XMFLOAT4X4 Projection;
+};
 
 class Sky
 {
@@ -47,8 +52,8 @@ public:
         const wchar_t* down,
         const wchar_t* front,
         const wchar_t* back,
-        const wchar_t* vertexShaderPath,
-        const wchar_t* pixelShaderPath);
+        Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader,
+        Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader);
 
     ~Sky();
 

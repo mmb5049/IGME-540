@@ -41,6 +41,7 @@ private:
 	void UINewFrame(float deltaTime);
 	void UpdateConstantBuffer(const VertexShaderExternalData& data);
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> LoadPixelShader(const wchar_t* path);
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> LoadVertexShader(const wchar_t* path);
 
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::vector<std::shared_ptr<GameEntity>> entities;
@@ -107,8 +108,6 @@ private:
 	std::vector<Light> lights;
 
 	// Sky
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> skyVertexShader;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> skyPixelShader;
 	std::shared_ptr<Sky> sky;
 
 	// Direct3D 11.1 context for binding buffer ranges

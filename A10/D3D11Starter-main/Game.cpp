@@ -42,7 +42,7 @@ Game::Game()
 	selectedOption = 0;
 
 	//lights
-	ambientColor = DirectX::XMFLOAT3(0.25f, 0.25f, 0.25f);
+	ambientColor = DirectX::XMFLOAT3(0.1f, 0.1f, 0.1f);
 		
 	Light light1{};
 		light1.Type = LIGHT_TYPE_DIRECTIONAL;
@@ -54,7 +54,7 @@ Game::Game()
 		
 	Light light2{};
 		light2.Type = LIGHT_TYPE_DIRECTIONAL;
-		light2.Direction = XMFLOAT3(-0.3f, -0.3f, 0.5f);
+		light2.Direction = XMFLOAT3(0.3f, -0.3f, -0.5f);
 		light2.Color = XMFLOAT3(0.2f, 1.0f, 0.1f);
 		light2.Intensity = 1.0f;
 		lights.push_back(light2);
@@ -217,11 +217,15 @@ void Game::LoadShaders()
 	ID3DBlob* vertexShaderBlob;
 
 	// Loading shaders
+	vertexShader = LoadVertexShader(FixPath(L"VertexShader.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> basicPixelShader = LoadPixelShader(FixPath(L"PixelShader.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> customPixelShader = LoadPixelShader(FixPath(L"CustomPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> normalPixelShader = LoadPixelShader(FixPath(L"DebugNormalsPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> uvPixelShader = LoadPixelShader(FixPath(L"DebugUVsPS.cso").c_str());
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> blendPixelShader = LoadPixelShader(FixPath(L"TextureBlendPS.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> skyVertexShader = LoadVertexShader(FixPath(L"SkyVertexShader.cso").c_str());
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> skyPixelShader = LoadPixelShader(FixPath(L"SkyPixelShader.cso").c_str());
+
 
 	// Loading textures
 	DirectX::CreateWICTextureFromFile(
@@ -272,6 +276,10 @@ void Game::LoadShaders()
 		decalNormal.GetAddressOf()
 	);
 
+
+	
+
+
 	D3D11_SAMPLER_DESC samplerDesc = {};
 
 	samplerDesc.Filter = D3D11_FILTER_ANISOTROPIC;
@@ -291,7 +299,19 @@ void Game::LoadShaders()
 		textureSampler.GetAddressOf()
 	);
 
-	
+	sky = std::make_shared<Sky>(
+		std::make_shared<Mesh>("Cube",
+			FixPath("../../Assets/Meshes/cube.obj").c_str()),
+		textureSampler,
+		FixPath(L"../../Planet/right.png").c_str(),
+		FixPath(L"../../Planet/left.png").c_str(),
+		FixPath(L"../../Planet/up.png").c_str(),
+		FixPath(L"../../Planet/down.png").c_str(),
+		FixPath(L"../../Planet/front.png").c_str(),
+		FixPath(L"../../Planet/back.png").c_str(),
+		skyVertexShader,
+		skyPixelShader
+	);
 
 	//  - Visual Studio will compile our shaders at build time
 	//  - They are saved as .cso (Compiled Shader Object) files
@@ -378,6 +398,9 @@ void Game::LoadShaders()
 	materials[2]->AddTextureSRV(0, brickTexture);
 	materials[2]->AddTextureSRV(1, decalTexture);
 	materials[2]->AddSampler(0, textureSampler);
+
+
+
 }
 
 
@@ -407,7 +430,7 @@ void Game::CreateGeometry()
 	meshes.push_back(std::make_shared<Mesh>("Torus",
 		FixPath("../../Assets/Meshes/torus.obj").c_str()));
 
-
+	
 
 	for (int i = 0; i < materials.size(); i++)
 	{
@@ -831,6 +854,32 @@ void Game::Draw(float deltaTime, float totalTime)
 		entity->Draw();
 	}
 
+	// --------------------------------------------
+	// Draw Skybox
+	// --------------------------------------------
+
+	if (sky)
+	{
+		SkyVertexShaderData skyData = {};
+
+		// Get camera matrices
+		skyData.View = cameras[activeCameraIndex]->GetViewMatrix();
+
+		skyData.Projection =
+			cameras[activeCameraIndex]->GetProjectionMatrix();
+
+		// Bind vertex shader constant buffer
+		FillAndBindNextConstantBuffer(
+			&skyData,
+			sizeof(SkyVertexShaderData),
+			D3D11_VERTEX_SHADER,
+			0
+		);
+
+		// Draw skybox
+		sky->Draw(cameras[activeCameraIndex]);
+	}
+
 	// Frame END
 	// - These should happen exactly ONCE PER FRAME
 	// - At the very end of the frame (after drawing *everything*)
@@ -888,6 +937,21 @@ Microsoft::WRL::ComPtr<ID3D11PixelShader> Game::LoadPixelShader(const wchar_t* p
 	// Create the pixel shader and return it
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> shader;
 	Graphics::Device->CreatePixelShader(
+		shaderBlob->GetBufferPointer(),	// Pointer to blob's contents
+		shaderBlob->GetBufferSize(),	// How big is that data?
+		0,								// No classes in this shader
+		shader.GetAddressOf());			// Address of the ID3D11PixelShader pointer
+	return shader;
+}
+
+Microsoft::WRL::ComPtr<ID3D11VertexShader> Game::LoadVertexShader(const wchar_t* path)
+{
+	ID3DBlob* shaderBlob;
+	D3DReadFileToBlob(path, &shaderBlob);
+
+	// Create the pixel shader and return it
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> shader;
+	Graphics::Device->CreateVertexShader(
 		shaderBlob->GetBufferPointer(),	// Pointer to blob's contents
 		shaderBlob->GetBufferSize(),	// How big is that data?
 		0,								// No classes in this shader
