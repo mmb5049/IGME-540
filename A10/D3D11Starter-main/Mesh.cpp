@@ -410,6 +410,11 @@ Mesh::Mesh(std::string name, const char* objFile)
 	//
 	// *************************************
 
+	CalculateTangents(&finalVertices[0],
+		static_cast<unsigned int>(finalVertices.size()),
+		&finalIndices[0],
+		static_cast<unsigned int>(finalIndices.size()));
+
 	// Create Vertex Buffer
 	CreateBuffers(
 		&finalVertices[0],

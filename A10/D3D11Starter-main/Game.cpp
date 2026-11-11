@@ -46,23 +46,23 @@ Game::Game()
 		
 	Light light1{};
 		light1.Type = LIGHT_TYPE_DIRECTIONAL;
-		light1.Direction = XMFLOAT3(0, 0.5, 0);
-		light1.Color = XMFLOAT3(0.1, 0.1, 1);
+		light1.Direction = XMFLOAT3(0.0f, 0.5f, 0.0f);
+		light1.Color = XMFLOAT3(0.1f, 0.1f, 1.0f);
 		light1.Intensity = 0.5f;
 
 		lights.push_back(light1);
 		
 	Light light2{};
 		light2.Type = LIGHT_TYPE_DIRECTIONAL;
-		light2.Direction = XMFLOAT3(-0.3, -0.3, 0.5);
-		light2.Color = XMFLOAT3(0.2, 1, 0.1);
+		light2.Direction = XMFLOAT3(-0.3f, -0.3f, 0.5f);
+		light2.Color = XMFLOAT3(0.2f, 1.0f, 0.1f);
 		light2.Intensity = 1.0f;
 		lights.push_back(light2);
 
 	Light light3{};
 		light3.Type = LIGHT_TYPE_DIRECTIONAL;
-		light3.Direction = XMFLOAT3(.3, 0.3, 0.3);
-		light3.Color = XMFLOAT3(1, 0.2, 0.2);
+		light3.Direction = XMFLOAT3(0.3f, 0.3f, 0.3f);
+		light3.Color = XMFLOAT3(1.0f, 0.2f, 0.2f);
 		light3.Intensity = 1.0f;
 		lights.push_back(light3);
 
@@ -243,7 +243,7 @@ void Game::LoadShaders()
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/Brick.png").c_str(),
+		FixPath(L"../../Textures/rock.png").c_str(),
 		nullptr,
 		brickTexture.GetAddressOf()
 	);
@@ -251,7 +251,7 @@ void Game::LoadShaders()
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/BrickNormal.png").c_str(),
+		FixPath(L"../../Textures/rock_normals.png").c_str(),
 		nullptr,
 		brickNormal.GetAddressOf()
 	);

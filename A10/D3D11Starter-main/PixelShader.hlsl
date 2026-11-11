@@ -25,85 +25,82 @@ cbuffer externalData : register(b0)
 
 float4 main(VertexToPixel input) : SV_TARGET
 {
-    // Normalize interpolated normal
-    // Sample the normal map
-    float3 normalSample = NormalMap.Sample(BasicSampler, input.uv).rgb;
+   // Apply UV transformations
+    float2 uv = input.uv * UVScale + UVOffset;
 
-    // Unpack from [0, 1] to [-1, 1]
-    float3 tangentNormal = normalSample * 2.0f - 1.0f;
 
-    // Normalize the sampled normal
-    tangentNormal = normalize(tangentNormal);
 
-    // Get the interpolated normal and tangent
+// Sample normal map
+    float3 normalSample = NormalMap.Sample(
+    BasicSampler, uv
+).rgb;
+
+// Unpack normal from [0, 1] to [-1, 1]
+    float3 tangentNormal = normalize(
+    normalSample * 2.0f - 1.0f
+    );
+    
+    
+    
+
+// Get interpolated normal and tangent
     float3 N = normalize(input.normal);
     float3 T = normalize(input.tangent);
 
-    // Make sure tangent is perpendicular to normal
-    T = normalize(T - N * dot(N, T));
+// Make tangent perpendicular to normal
+    T = normalize(T - N * dot(T, N));
 
-    // Calculate bitangent
+// Calculate bitangent
     float3 B = normalize(cross(N, T));
 
-    // Create TBN matrix
+// Create TBN matrix
     float3x3 TBN = float3x3(T, B, N);
 
-    // Transform tangent-space normal into world space
-    float3 normal = normalize(mul(TBN, tangentNormal));
+// Transform tangent-space normal into world space
+    float3 normal = normalize(mul(tangentNormal, TBN));
+    
+    float3 surfaceColor = SurfaceTexture.Sample(BasicSampler, input.uv).rgb;
+    surfaceColor *= colorTint.rgb;
 
-    // Apply UV transformations
-    float2 uv = input.uv * UVScale + UVOffset;
-
-    // Sample texture
-    float4 surfaceColor =
-        SurfaceTexture.Sample(BasicSampler, uv);
-
-    // Calculate material surface color
-    float3 baseColor = surfaceColor.rgb * colorTint.rgb;
-
-    // Ambient lighting
-    float3 totalLight =
-        ambientColor * baseColor;
+// Ambient lighting
+    float3 totalLight = ambientColor * surfaceColor;
 
     // Directional diffuse lighting
-    float3 totalDiffuseAndSpecular = float3(0, 0, 0);
 
     for (int i = 0; i < 6; i++)
     {
-
         if (lights[i].Type == LIGHT_TYPE_DIRECTIONAL)
         {
-            totalDiffuseAndSpecular += CalculateDirectionalLight(
-                lights[i],
-                input.normal,
-                baseColor,
-                input.worldPosition,
-                cameraPosition
-            );
+            totalLight += CalculateDirectionalLight(
+            lights[i],
+            normal,
+            surfaceColor,
+            input.worldPosition,
+            cameraPosition
+        );
         }
         else if (lights[i].Type == LIGHT_TYPE_POINT)
         {
-            totalDiffuseAndSpecular += CalculatePointLight(
+            totalLight += CalculatePointLight(
             lights[i],
-            input.normal,
-            baseColor,
+            normal,
+            surfaceColor,
             input.worldPosition,
             cameraPosition
         );
         }
         else if (lights[i].Type == LIGHT_TYPE_SPOT)
         {
-            totalDiffuseAndSpecular += CalculateSpotLight(
+            totalLight += CalculateSpotLight(
             lights[i],
-            input.normal,
-            baseColor,
+            normal,
+            surfaceColor,
             input.worldPosition,
             cameraPosition
         );
         }
     }
 
-    totalLight += totalDiffuseAndSpecular;
-
-    return float4(totalLight, 1);
+    return float4(totalLight, 1.0f);
+    
 }

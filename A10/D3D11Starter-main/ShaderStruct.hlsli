@@ -44,6 +44,7 @@ struct Light
     float2 Padding;
 };
 
+
 float Attenuate(Light light, float3 worldPos)
 {
     float dist = distance(light.Position, worldPos);
@@ -173,5 +174,7 @@ float3 CalculateSpotLight(
 
     return pointContribution * spotAttenuation;
 }
+
+
 
 #endif
