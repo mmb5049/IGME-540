@@ -17,6 +17,7 @@
 #include <string>
 #include <d3d11shadertracing.h>
 #include "Light.h"
+#include "Sky.h"
 class Game
 {
 public:
@@ -104,6 +105,11 @@ private:
 	// Light
 	DirectX::XMFLOAT3 ambientColor;
 	std::vector<Light> lights;
+
+	// Sky
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> skyVertexShader;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> skyPixelShader;
+	std::shared_ptr<Sky> sky;
 
 	// Direct3D 11.1 context for binding buffer ranges
 

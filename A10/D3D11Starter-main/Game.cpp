@@ -407,6 +407,8 @@ void Game::CreateGeometry()
 	meshes.push_back(std::make_shared<Mesh>("Torus",
 		FixPath("../../Assets/Meshes/torus.obj").c_str()));
 
+
+
 	for (int i = 0; i < materials.size(); i++)
 	{
 		for (int y = 0; y < meshes.size(); y++)
