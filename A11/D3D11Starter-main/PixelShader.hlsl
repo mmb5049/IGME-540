@@ -1,12 +1,15 @@
-#include "ShaderStruct.hlsli"
-Texture2D SurfaceTexture : register(t0);
-Texture2D NormalMap : register(t1);
-SamplerState BasicSampler : register(s0);
 
+#include "ShaderStruct.hlsli"
+
+Texture2D AlbedoTexture : register(t0);
+Texture2D NormalMap : register(t1);
+Texture2D RoughnessMap : register(t2);
+Texture2D MetalnessMap : register(t3);
+
+SamplerState BasicSampler : register(s0);
 
 cbuffer externalData : register(b0)
 {
-    
     float4 colorTint;
     float totalTime;
     float3 padding;
@@ -21,94 +24,101 @@ cbuffer externalData : register(b0)
     Light lights[6];
 }
 
-
-
 float4 main(VertexToPixel input) : SV_TARGET
 {
-   // Apply UV transformations
+    // UV transformations
     float2 uv = input.uv * UVScale + UVOffset;
 
+    // Albedo - convert from gamma space to linear space
+    float3 albedo = pow(
+        AlbedoTexture.Sample(BasicSampler, uv).rgb,
+        2.2f
+    );
 
+    albedo *= colorTint.rgb;
 
-    // Sample normal map
+    // Normal map - no gamma correction
     float3 normalSample = NormalMap.Sample(
         BasicSampler, uv
     ).rgb;
 
-    // Unpack normal from [0, 1] to [-1, 1]
     float3 tangentNormal = normalize(
         normalSample * 2.0f - 1.0f
     );
-    
-    
-    
 
-    // Get interpolated normal and tangent
+    // TBN matrix
     float3 N = normalize(input.normal);
     float3 T = normalize(input.tangent);
 
-    // Make tangent perpendicular to normal
     T = normalize(T - N * dot(T, N));
 
-    // Calculate bitangent
     float3 B = normalize(cross(N, T));
 
-    // Create TBN matrix
     float3x3 TBN = float3x3(T, B, N);
 
-    // Transform tangent-space normal into world space
     float3 normal = normalize(mul(tangentNormal, TBN));
-    
-    float3 surfaceColor = pow(
-        SurfaceTexture.Sample(BasicSampler, uv).rgb,
-        2.2f
-    );
 
-    surfaceColor *= colorTint.rgb;
+    // Roughness - no gamma correction
+    float roughness = RoughnessMap.Sample(
+        BasicSampler, uv
+    ).r;
 
-    // Ambient lighting
-    float3 totalLight = ambientColor * surfaceColor;
+    // Prevent zero roughness from causing unstable calculations
+    roughness = max(roughness, 0.04f);
 
-    // Directional diffuse lighting
+    // Metalness - no gamma correction
+    float metalness = MetalnessMap.Sample(
+        BasicSampler, uv
+    ).r;
 
+    // Ambient lighting - reduced by metalness
+    float3 totalLight =
+        ambientColor * albedo * (1.0f - metalness);
+
+    // Calculate direct lighting
     for (int i = 0; i < 6; i++)
     {
         if (lights[i].Type == LIGHT_TYPE_DIRECTIONAL)
         {
             totalLight += CalculateDirectionalLight(
-            lights[i],
-            normal,
-            surfaceColor,
-            input.worldPosition,
-            cameraPosition
-        );
+                lights[i],
+                normal,
+                albedo,
+                roughness,
+                metalness,
+                input.worldPosition,
+                cameraPosition
+            );
         }
         else if (lights[i].Type == LIGHT_TYPE_POINT)
         {
             totalLight += CalculatePointLight(
-            lights[i],
-            normal,
-            surfaceColor,
-            input.worldPosition,
-            cameraPosition
-        );
+                lights[i],
+                normal,
+                albedo,
+                roughness,
+                metalness,
+                input.worldPosition,
+                cameraPosition
+            );
         }
         else if (lights[i].Type == LIGHT_TYPE_SPOT)
         {
             totalLight += CalculateSpotLight(
-            lights[i],
-            normal,
-            surfaceColor,
-            input.worldPosition,
-            cameraPosition
-        );
+                lights[i],
+                normal,
+                albedo,
+                roughness,
+                metalness,
+                input.worldPosition,
+                cameraPosition
+            );
         }
     }
 
+    // Gamma correction
     return float4(
-        pow(totalLight, 1.0f / 2.2f),
+        pow(max(totalLight, 0.0f), 1.0f / 2.2f),
         1.0f
     );
-
-    
 }

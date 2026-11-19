@@ -231,23 +231,39 @@ void Game::LoadShaders()
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/Wood.png").c_str(),
+		FixPath(L"../../Textures/floor_albedo.png").c_str(),
 		nullptr,
-		woodTexture.GetAddressOf()
+		floorTexture.GetAddressOf()
 	);
 
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/WoodNormal.png").c_str(),
+		FixPath(L"../../Textures/floor_normal.png").c_str(),
 		nullptr,
-		woodNormal.GetAddressOf()
+		floorNormal.GetAddressOf()
 	);
 
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/rock.png").c_str(),
+		FixPath(L"../../Textures/floor_roughness.png").c_str(),
+		nullptr,
+		floorRoughness.GetAddressOf()
+	);
+
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/floor_metal.png").c_str(),
+		nullptr,
+		floorMetalness.GetAddressOf()
+	);
+
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/cobblestone.png").c_str(),
 		nullptr,
 		brickTexture.GetAddressOf()
 	);
@@ -255,7 +271,23 @@ void Game::LoadShaders()
 	DirectX::CreateWICTextureFromFile(
 		Graphics::Device.Get(),
 		Graphics::Context.Get(),
-		FixPath(L"../../Textures/rock_normals.png").c_str(),
+		FixPath(L"../../Textures/coubblestone_roughness.png").c_str(),
+		nullptr,
+		brickRoughness.GetAddressOf()
+	);
+
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/coubblestone_metal.png").c_str(),
+		nullptr,
+		brickMetalness.GetAddressOf()
+	);
+
+	DirectX::CreateWICTextureFromFile(
+		Graphics::Device.Get(),
+		Graphics::Context.Get(),
+		FixPath(L"../../Textures/cobblestone_normals.png").c_str(),
 		nullptr,
 		brickNormal.GetAddressOf()
 	);
@@ -387,12 +419,16 @@ void Game::LoadShaders()
 		vertexShader,
 		customPixelShader));
 
-	materials[0]->AddTextureSRV(0, woodTexture);
-	materials[0]->AddTextureSRV(1, woodNormal);
+	materials[0]->AddTextureSRV(0, floorTexture);
+	materials[0]->AddTextureSRV(1, floorNormal);
+	materials[0]->AddTextureSRV(2, floorRoughness);
+	materials[0]->AddTextureSRV(3, floorMetalness);
 	materials[0]->AddSampler(0, textureSampler);
 
 	materials[1]->AddTextureSRV(0, brickTexture);
 	materials[1]->AddTextureSRV(1, brickNormal);
+	materials[1]->AddTextureSRV(2, brickRoughness);
+	materials[1]->AddTextureSRV(3, brickMetalness);
 	materials[1]->AddSampler(0, textureSampler);
 
 	materials[2]->AddTextureSRV(0, brickTexture);

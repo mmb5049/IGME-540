@@ -87,14 +87,21 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBuffer;
 
 	// Textures
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> decalTexture;
 
 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> woodNormal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorNormal;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickNormal;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> decalNormal;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickRoughness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorRoughness;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> floorMetalness;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brickMetalness;
+
 	// Shared sampler state
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> textureSampler;
 
