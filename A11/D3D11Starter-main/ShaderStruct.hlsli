@@ -86,7 +86,7 @@ float GeometrySchlickGGX(float NdotV, float roughness)
     return NdotV / (NdotV * (1.0f - k) + k);
 }
 
-float GeometrySmith(
+float GeometricShadowing(
     float3 N,
     float3 V,
     float3 L,
@@ -116,7 +116,7 @@ float3 MicrofacetBRDF(
     float VdotH = max(dot(V, H), 0.0f);
 
     float D = DistributionGGX(N, H, roughness);
-    float G = GeometrySmith(N, V, L, roughness);
+    float G = GeometricShadowing(N, V, L, roughness);
     float3 F = FresnelSchlick(VdotH, F0);
 
     float denominator =
